@@ -412,7 +412,9 @@ library(tidyr)
 comparison %>%
   gather(x, y, Sensitivity:F1) %>%
   ggplot(aes(x = x, y = y, color = model)) +
-  geom_jitter(width = 0.2, alpha = 0.5, size = 3)
+  geom_jitter(width = 0.2, alpha = 0.5, size = 3)+ 
+  xlab('Model Performance parameters')+
+  ylab(' ')
 
 
 
