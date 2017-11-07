@@ -120,7 +120,20 @@ ggplot(data = T2_traindata_SMOTE)+
   geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
                  #shape = as.factor(Dependents), size = Credit_Loans, 
                  color = DLQs))
+require(smotefamily)
+T2_traindata_SMOTE_B = BLSMOTE(as.data.frame(T2_traindata[2:5]),as.numeric(T2_traindata$DLQs),
+                               K=4,C=3,dupSize=25,method =c("type1"))
+table(T2_traindata_SMOTE_B$data$class)/length(T2_traindata_SMOTE_B$data$class)
+table(T2_traindata$DLQs)/length(T2_traindata$DLQs)
+T2_traindata_SMOTE_BS = T2_traindata_SMOTE_B$data
+T2_traindata_SMOTE_BS$DLQs = ifelse(T2_traindata_SMOTE_BS$class == 1, 0, 1)
+T2_traindata_SMOTE_BS = T2_traindata_SMOTE_BS[,c(6,1,2,3,4)]
+T2_traindata_SMOTE_BS$DLQs = as.factor(T2_traindata_SMOTE_BS$DLQs)
 
+ggplot(data = T2_traindata_SMOTE_BS)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
 
 
 
