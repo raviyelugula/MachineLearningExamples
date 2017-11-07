@@ -4,6 +4,7 @@ require(usdm) ## VIF
 require(ggplot2) ## Visualization
 require(caTools) ## split
 require(class) ## KNN
+require(DMwR) ## SMOTE
 
 # reading the data
 excel_sheets(path = 'training.xlsx')
@@ -55,7 +56,7 @@ print(length(which(T2_traindata_C_Te$Dependents == dependents))/length(dependent
 model = lm(Dependents~Utlz_UnsecLines+DebtRatio+Credit_Loans,
            data=T2_traindata_C_Tr)
 summary(model)
-dependents = round(predict(model,T2_traindata_C_Te))
+dependents = round(predict(model,T2_traindata_C_Te)) ## LR is not working as it gives all as 1
 rm(list = c('T2_traindata_C_Te','T2_traindata_C_Tr'))
 
 dependents = knn(train = scale(T2_traindata_C[,c(2,3,4)]),
@@ -100,9 +101,25 @@ rm(list = c('T1_traindata_C','T1_traindata_M'))
 Missing_data_Check(T1_traindata)
 
 # Model building for T2 - 94:6 target varibale
+T2_traindata = T2_traindata[,1:5]
+T2_traindata$Dependents = as.numeric(T2_traindata$Dependents)
 
+ggplot(data = T2_traindata)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
 
+T2_traindata_SMOTE = SMOTE(DLQs~Utlz_UnsecLines+DebtRatio+
+                             Credit_Loans+Dependents,as.data.frame(T2_traindata),
+                           perc.over = 600,perc.under = 300)
+table(T2_traindata$DLQs)
+table(T2_traindata_SMOTE$DLQs)
+table(T2_traindata_SMOTE$DLQs)/length(T2_traindata_SMOTE$DLQs)
 
+ggplot(data = T2_traindata_SMOTE)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
 
 
 
