@@ -5,7 +5,8 @@ require(ggplot2) ## Visualization
 require(caTools) ## split
 require(class) ## KNN
 require(DMwR) ## SMOTE
-
+require(caret) ## K-Fold
+ 
 # reading the data
 excel_sheets(path = 'training.xlsx')
 traindata = read_excel(path = 'training.xlsx', sheet = 'training')
@@ -134,6 +135,35 @@ ggplot(data = T2_traindata_SMOTE_BS)+
   geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
                  #shape = as.factor(Dependents), size = Credit_Loans, 
                  color = DLQs))
+
+split = sample.split(T2_traindata_SMOTE_BS$DLQs, SplitRatio = 0.75)
+training_set = subset(T2_traindata_SMOTE_BS, split == TRUE)
+test_set = subset(T2_traindata_SMOTE_BS, split == FALSE)
+T2_LR = glm( formula = DLQs~., 
+             family = binomial,
+             data = training_set)
+prob_pred = predict(T2_LR, type = 'response', newdata = test_set[-1])
+y_pred = ifelse(prob_pred > 0.55, 1, 0)
+CM = table(test_set[,1],y_pred)
+LR_Speci = CM[4]/(CM[4]+CM[2])
+LR_Speci
+
+
+folds = createFolds(training_set$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = training_set[-x, ]
+  test_fold = training_set[x, ]
+  T2_LR_KF = glm( formula = DLQs~., 
+                    family = binomial,
+                    data = training_set)
+  prob_pred = predict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
+  y_pred = ifelse(prob_pred > 0.55, 1, 0)
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+LR_Speci_KF = mean(as.numeric(cv))
+
 
 
 
