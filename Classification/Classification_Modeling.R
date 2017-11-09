@@ -5,7 +5,8 @@ require(ggplot2) ## Visualization
 require(caTools) ## split
 require(class) ## KNN
 require(DMwR) ## SMOTE
-require(caret) ## K-Fold
+require(caret) ## K-Fold, tuning
+require(e1071) ## SVM
  
 # reading the data
 excel_sheets(path = 'training.xlsx')
@@ -101,7 +102,7 @@ T1_traindata = rbind(T1_traindata_C,T1_traindata_M)
 rm(list = c('T1_traindata_C','T1_traindata_M'))
 Missing_data_Check(T1_traindata)
 
-# Model building for T2 - 94:6 target varibale
+## Model building for T2 - 94:6 target varibale ratio
 T2_traindata = T2_traindata[,1:5]
 T2_traindata$Dependents = as.numeric(T2_traindata$Dependents)
 
@@ -109,7 +110,7 @@ ggplot(data = T2_traindata)+
   geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
                  #shape = as.factor(Dependents), size = Credit_Loans, 
                  color = DLQs))
-
+# SMOTE for treating imbalance data set 94:6 ratio T- variable
 T2_traindata_SMOTE = SMOTE(DLQs~Utlz_UnsecLines+DebtRatio+
                              Credit_Loans+Dependents,as.data.frame(T2_traindata),
                            perc.over = 600,perc.under = 300)
@@ -121,6 +122,8 @@ ggplot(data = T2_traindata_SMOTE)+
   geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
                  #shape = as.factor(Dependents), size = Credit_Loans, 
                  color = DLQs))
+
+# SMOTE has oversampled the major class area too - so trying boundary SMOTE
 require(smotefamily)
 T2_traindata_SMOTE_B = BLSMOTE(as.data.frame(T2_traindata[2:5]),as.numeric(T2_traindata$DLQs),
                                K=4,C=3,dupSize=25,method =c("type1"))
@@ -139,23 +142,34 @@ ggplot(data = T2_traindata_SMOTE_BS)+
 split = sample.split(T2_traindata_SMOTE_BS$DLQs, SplitRatio = 0.75)
 training_set = subset(T2_traindata_SMOTE_BS, split == TRUE)
 test_set = subset(T2_traindata_SMOTE_BS, split == FALSE)
+training_set_scaled = training_set
+training_set_scaled[-1] = scale(training_set_scaled[-1])
+test_set_scaled = test_set
+test_set_scaled[-1] = scale(test_set_scaled[-1])
+
+# Logistic regression -- Specificity: Train - 62.591 K-fold Train - 63.004 Test - 60.869 ----
 T2_LR = glm( formula = DLQs~., 
              family = binomial,
              data = training_set)
-prob_pred = predict(T2_LR, type = 'response', newdata = test_set[-1])
+prob_pred = predict(T2_LR, type = 'response', newdata = training_set[-1])
 y_pred = ifelse(prob_pred > 0.55, 1, 0)
-CM = table(test_set[,1],y_pred)
-LR_Speci = CM[4]/(CM[4]+CM[2])
-LR_Speci
+CM = table(training_set[,1],y_pred)
+LR_Speci_Train = CM[4]/(CM[4]+CM[2])
+LR_Speci_Train
 
+require(lmtest)
+lrtest(T2_LR) # overall test i significant
+require(pscl)
+pR2(T2_LR) # 35 - very good McFadden R2
 
+set.seed(1234)
 folds = createFolds(training_set$DLQs, k = 10)
 cv = lapply(folds, function(x) {
   training_fold = training_set[-x, ]
   test_fold = training_set[x, ]
   T2_LR_KF = glm( formula = DLQs~., 
                     family = binomial,
-                    data = training_set)
+                    data = training_fold)
   prob_pred = predict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
   y_pred = ifelse(prob_pred > 0.55, 1, 0)
   CM = table(test_fold[,1],y_pred)
@@ -164,7 +178,118 @@ cv = lapply(folds, function(x) {
 })
 LR_Speci_KF = mean(as.numeric(cv))
 
+prob_pred = predict(T2_LR, type = 'response', newdata = test_set[-1])
+y_pred = ifelse(prob_pred > 0.55, 1, 0)
+CM = table(test_set[,1],y_pred)
+LR_Speci_Test = CM[4]/(CM[4]+CM[2])
+LR_Speci_Test
+
+# KNN Classification -- Specificity:Train - xxxxx K-fold Train - 87.363 Test 85.714  ---- 
+caret_tune = train(form = DLQs~ ., data = training_set_scaled, method = 'knn')
+caret_tune
+caret_tune$bestTune # caret to tune for k value
+
+y_pred = knn(train =training_set_scaled[,-1],
+             test =test_set_scaled[,-1],
+             cl = training_set_scaled[, 1],
+             k = 5,
+             prob = TRUE)
+CM = table(test_set_scaled[,1],y_pred)
+Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
+Knn_Speci_Test
+
+set.seed(1234)
+folds = createFolds(training_set_scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = training_set_scaled[-x, ]
+  test_fold = training_set_scaled[x, ]
+  y_pred = knn(train =training_fold[,-1],
+               test =test_fold[,-1],
+               cl = training_fold[, 1],
+               k = 5,
+               prob = TRUE)
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+Knn_Speci_KF = mean(as.numeric(cv))
+
+# SVM Classification -- Specificity:Train - 81.554 K-fold Train - 81.038 Test 78.882  ---- 
+caret_tune = train(form = DLQs~ ., data = training_set_scaled, method = 'svmLinearWeights')
+caret_tune
+caret_tune$bestTune # caret to tune for cost and weight value - cost is 1 which is default
+tune_svm_kernal = tune(svm, DLQs~ ., data = training_set_scaled,
+                       kernal = 'radial',
+                       ranges = list(cost = c(0.1,0.5,1,5,10,50,100,500,1000),
+                                     gamma = c(0.1:0.9,1,2,3,4)))
+summary(tune_svm_kernal) # tuned parameters says cost and gamma 
+tune_svm_kernal = tune(svm, DLQs~ ., data = training_set_scaled,
+                       kernal = 'polynomial',
+                       ranges = list(cost = c(0.1,0.5,1,5,10,50,100,500,1000),
+                                     gamma = c(0.1:0.9,1,2,3,4),
+                                     degree = c(2:6),
+                                     coef0 = c(0,0.5,1,2)))
+summary(tune_svm_kernal) # tuned parameters says cost and gamma and degree and coef0
 
 
+for(svmType in c('C-classification','nu-classification')){
+  for(svmKernal in c('linear','polynomial','radial','sigmoid')){
+    set.seed(1234)
+    folds = createFolds(training_set_scaled$DLQs, k = 10)
+    cv = lapply(folds, function(x) {
+      training_fold = training_set_scaled[-x, ]
+      test_fold = training_set_scaled[x, ]
+      T2_SVM = svm(formula = DLQs ~ .,
+                   data = training_fold,
+                   type = 'C-classification',
+                   kernel = svmKernal)
+      y_pred = predict(T2_SVM, newdata = test_fold[-1])
+      CM = table(test_fold[,1],y_pred)
+      temp = CM[4]/(CM[4]+CM[2])
+      return(temp)
+    })
+    specificity_SVM = round(mean(as.numeric(cv)),5)*100
+    print.noquote(paste0(svmKernal,'-kernal ',svmType,' has K-fold specificity of ',specificity_SVM))
+  }
+} # will choose radial kernal with C-Classification as it has highest 81.038
 
+T2_SVM = svm(formula = DLQs ~ .,
+             data = training_set_scaled,
+             type = 'C-classification',
+             kernel = 'radial')
+y_pred = predict(T2_SVM, newdata = training_set_scaled[-1])
+CM = table(training_set_scaled[,1],y_pred)
+SVM_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+y_pred = predict(T2_SVM, newdata = test_set_scaled[-1])
+CM = table(test_set_scaled[,1],y_pred)
+SVM_Speci_Test = CM[4]/(CM[4]+CM[2])
+
+# Naive Bayes -- -- Specificity:Train - 81.347 K-fold Train - 81.557 Test 83.851   ----
+T2_NB = naiveBayes(x = training_set[-1],
+                   y = training_set_scaled$DLQs)
+
+y_pred = predict(T2_NB, newdata = training_set_scaled[-1])
+CM = table(training_set_scaled[,1],y_pred)
+NB_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+set.seed(1234)
+folds = createFolds(training_set_scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = training_set_scaled[-x, ]
+  test_fold = training_set_scaled[x, ]
+  T2_NB = naiveBayes(x = training_fold[-1],
+                     y = training_fold$DLQs)
+  y_pred = predict(T2_SVM, newdata = test_fold[-1])
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+NB_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+y_pred = predict(T2_NB, newdata = test_set_scaled[-1])
+CM = table(test_set_scaled[,1],y_pred)
+NB_Speci_Test = CM[4]/(CM[4]+CM[2])
+
+# --------
 
