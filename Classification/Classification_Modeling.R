@@ -7,6 +7,7 @@ require(class) ## KNN
 require(DMwR) ## SMOTE
 require(caret) ## K-Fold, tuning
 require(e1071) ## SVM
+require(rpart) ## CART - Decision Tree
  
 # reading the data
 excel_sheets(path = 'training.xlsx')
@@ -220,17 +221,20 @@ caret_tune
 caret_tune$bestTune # caret to tune for cost and weight value - cost is 1 which is default
 tune_svm_kernal = tune(svm, DLQs~ ., data = training_set_scaled,
                        kernal = 'radial',
-                       ranges = list(cost = c(0.1,0.5,1,5,10,50,100,500,1000),
-                                     gamma = c(0.1:0.9,1,2,3,4)))
-summary(tune_svm_kernal) # tuned parameters says cost and gamma 
+                       ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), # penalising factor for missclassification, high c => low bias, high viariance, default is 1
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) # smoothening the boundary shape sharpness, low gama => pointy bounday, low bias, high variance, default 1/dimensions
+summary(tune_svm_kernal) # tuned parameters says cost 3 and gamma 4
+tune_svm_kernal = tune(svm, DLQs~ ., data = training_set_scaled,
+                       kernal = 'sigmoid',
+                       ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), 
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) 
+b = summary(tune_svm_kernal) # tuned parameters says cost  and gamma 
 tune_svm_kernal = tune(svm, DLQs~ ., data = training_set_scaled,
                        kernal = 'polynomial',
-                       ranges = list(cost = c(0.1,0.5,1,5,10,50,100,500,1000),
-                                     gamma = c(0.1:0.9,1,2,3,4),
-                                     degree = c(2:6),
-                                     coef0 = c(0,0.5,1,2)))
-summary(tune_svm_kernal) # tuned parameters says cost and gamma and degree and coef0
-
+                       ranges = list(ccost = c(0.1,0.4,0.8,1,3,5,10,50,100),
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4),
+                                     degree = c(2,3,4,5,6)))
+a = summary(tune_svm_kernal) # tuned parameters says cost and gamma and degree and coef0
 
 for(svmType in c('C-classification','nu-classification')){
   for(svmKernal in c('linear','polynomial','radial','sigmoid')){
@@ -291,5 +295,50 @@ y_pred = predict(T2_NB, newdata = test_set_scaled[-1])
 CM = table(test_set_scaled[,1],y_pred)
 NB_Speci_Test = CM[4]/(CM[4]+CM[2])
 
-# --------
+# CART --------
+caret_tune = train(form = DLQs~ ., data = training_set_scaled, method = 'rpart')
+caret_tune
+caret_tune$bestTune # CP - Tunning 
+
+T2_CART_temp = rpart(formula = DLQs ~ ., 
+                     data = training_set_scaled[,-1], ## removing ID column, cause that doesn't help in classification
+                     method = "class", 
+                     minsplit= 225, 
+                     cp = 0, 
+                     xval = 7)
+printcp(T2_CART_temp)
+plotcp(T2_CART_temp)
+T2_CART = prune(T2_CART_temp, cp= x ,"CP")
+y_pred = predict(T2_CART, newdata = training_set_scaled[-1])
+CM = table(training_set_scaled[,1],y_pred)
+CART_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+set.seed(1234)
+folds = createFolds(training_set_scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = training_set_scaled[-x, ]
+  test_fold = training_set_scaled[x, ]
+  T2_CART_temp = rpart(formula = DLQs ~ ., 
+                       data = training_fold[,-1], ## removing ID column, cause that doesn't help in classification
+                       method = "class", 
+                       minsplit= 225, 
+                       cp = x, 
+                       xval = 7)
+  y_pred = predict(T2_CART_temp, newdata = test_fold[-1])
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+CART_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+y_pred = predict(T2_CART, newdata = test_set_scaled[-1])
+CM = table(test_set_scaled[,1],y_pred)
+CART_Speci_Test = CM[4]/(CM[4]+CM[2])
+
+# Random Forest ------
+
+
+
+
+
 
