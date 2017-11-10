@@ -9,6 +9,7 @@ require(caret) ## K-Fold, tuning
 require(e1071) ## SVM
 require(rpart) ## CART - Decision Tree
 require(randomForest) ## RandomForest
+require(neuralnet) ## ANN
 
 # reading the data
 excel_sheets(path = 'training.xlsx')
@@ -404,15 +405,34 @@ y_pred = predict(T2_RF, newdata = test_set_scaled[-1], type='class')
 CM = table(test_set_scaled[,1],y_pred)
 RF_Speci_Test = CM[4]/(CM[4]+CM[2])
 
-# ANN ----
+# ANN -- Specificity:Train - 87.254 K-fold Train - xxxxxx Test 85.093 ----
+training_set_scaled_ANN = training_set_scaled
+training_set_scaled_ANN$DLQs = as.numeric(as.character(training_set_scaled_ANN$DLQs))
+test_set_scaled_ANN = test_set_scaled
+test_set_scaled_ANN$DLQs = as.numeric(as.character(test_set_scaled_ANN$DLQs))
 
+n = names(training_set_scaled_ANN)
+long_formula = as.formula(paste("DLQs ~", paste(n[!n %in% "DLQs"], collapse = " + ")))
+set.seed(123)
+T2_ANN = neuralnet(formula = long_formula,
+                         data = training_set_scaled_ANN,
+                         hidden = c(5,5),
+                         err.fct = "sse",
+                         linear.output = FALSE,
+                         lifesign = "full",
+                         lifesign.step = 1,
+                         threshold = 0.05,
+                         stepmax = 100000)
+plot(T2_ANN)
+y_pred = ifelse(T2_ANN$net.result[[1]] >= 0.5,1,0)
+CM = table(training_set_scaled_ANN[,1],y_pred)
+ANN_Speci_Train = CM[4]/(CM[4]+CM[2])
+ANN_Speci_Train
 
+y_pred = compute(T2_ANN,test_set_scaled_ANN[,-1])
+y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
+CM = table(test_set_scaled_ANN[,1],y_pred)
+ANN_Speci_Test = CM[4]/(CM[4]+CM[2])
+ANN_Speci_Test
 
-
-
-
-
-
-
-
-
+# Test Data preparation-----
