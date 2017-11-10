@@ -517,7 +517,7 @@ ggplot(data = T2_testdata_SMOTE_BS)+
 T2_testdata_Scale = T2_testdata_SMOTE_BS
 T2_testdata_Scale[,-1] = scale(T2_testdata_Scale[,-1]) 
 
-# Model Testing againist Test data LR: 48.889 KNN: 24.444  ----
+# Model Testing againist Test data LR: 48.889 KNN: 24.444 SVM: 19.0 NB: 75.667 CART: 84.667 RF: 25.333 ANN: 51.0  ----
 
 T2_LR = glm( formula = DLQs~., 
              family = binomial,
@@ -554,12 +554,64 @@ CM = table(T2_testdata_Scale$DLQs,y_pred)
 NB_Speci_Hold = CM[4]/(CM[4]+CM[2])
 NB_Speci_Hold
 
+T2_CART = rpart(formula = DLQs ~ ., 
+                     data = T2_traindata_SMOTE_BS_scaled, 
+                     method = "class", 
+                     minsplit= 225, 
+                     cp = 0.05284974, 
+                     xval = 7)
+y_pred = predict(T2_CART, newdata = T2_testdata_Scale[-1], type='class')
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+CART_Speci_Hold = CM[4]/(CM[4]+CM[2])
+CART_Speci_Hold
+
+T2_RF = randomForest(DLQs ~ ., data = T2_traindata_SMOTE_BS_scaled, 
+                     ntree=250, mtry = 2, nodesize = 40,
+                     importance=TRUE)
+y_pred = predict(T2_RF, newdata = T2_testdata_Scale[-1], type='class')
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+RF_Speci_Hold = CM[4]/(CM[4]+CM[2])
+RF_Speci_Hold
+
+T2_traindata_SMOTE_BS_scaled_ANN = T2_traindata_SMOTE_BS_scaled
+T2_traindata_SMOTE_BS_scaled_ANN$DLQs = as.numeric(as.character(T2_traindata_SMOTE_BS_scaled_ANN$DLQs))
+T2_testdata_Scale_ANN = T2_testdata_Scale
+T2_testdata_Scale_ANN$DLQs = as.numeric(as.character(T2_testdata_Scale_ANN$DLQs))
+T2_ANN = neuralnet(formula = long_formula,
+                   data = training_set_scaled_ANN,
+                   hidden = c(5,5),
+                   err.fct = "sse",
+                   linear.output = FALSE,
+                   lifesign = "full",
+                   lifesign.step = 1,
+                   threshold = 0.05,
+                   stepmax = 100000)
+plot(T2_ANN)
+y_pred = compute(T2_ANN,T2_testdata_Scale[,-1])
+y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
+CM = table(T2_testdata_Scale_ANN$DLQs,y_pred)
+ANN_Speci_Hold = CM[4]/(CM[4]+CM[2])
+ANN_Speci_Hold
 
 
 
+ggplot(data = T2_testdata_SMOTE_BS)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
+ggplot(data = T2_testdata_SMOTE_BS)+
+  geom_point(aes(x = Dependents, y = Credit_Loans,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
 
-
-
+ggplot(data = T2_traindata_SMOTE_BS)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
+ggplot(data = T2_traindata_SMOTE_BS)+
+  geom_point(aes(x = Dependents, y = Credit_Loans,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
 
 
 
