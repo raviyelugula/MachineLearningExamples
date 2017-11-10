@@ -5,6 +5,7 @@ require(ggplot2) ## Visualization
 require(caTools) ## split
 require(class) ## KNN
 require(DMwR) ## SMOTE
+require(smotefamily) ## BoderLine SMOTE
 require(caret) ## K-Fold, tuning
 require(e1071) ## SVM
 require(rpart) ## CART - Decision Tree
@@ -127,7 +128,6 @@ ggplot(data = T2_traindata_SMOTE)+
                  color = DLQs))
 
 # SMOTE has oversampled the major class area too - so trying boundary SMOTE
-require(smotefamily)
 T2_traindata_SMOTE_B = BLSMOTE(as.data.frame(T2_traindata[2:5]),as.numeric(T2_traindata$DLQs),
                                K=4,C=3,dupSize=25,method =c("type1"))
 table(T2_traindata_SMOTE_B$data$class)/length(T2_traindata_SMOTE_B$data$class)
@@ -436,3 +436,108 @@ ANN_Speci_Test = CM[4]/(CM[4]+CM[2])
 ANN_Speci_Test
 
 # Test Data preparation-----
+# reading the data
+excel_sheets(path = 'test.xlsx')
+testdata = read_excel(path = 'test.xlsx', sheet = 'test')
+
+# rename cols, new features, data type adjustments
+colnames(testdata) = c('RowID','DLQs','Utlz_UnsecLines','DebtRatio',
+                       'Credit_Loans','Dependents')
+testdata = testdata %>% 
+  dplyr::select(DLQs,Utlz_UnsecLines,DebtRatio,Credit_Loans,Dependents) 
+testdata$UUL_flag = ifelse(testdata$Utlz_UnsecLines>1,1,0)
+testdata$DR_flag = ifelse(testdata$DebtRatio>1,1,0)
+sapply(testdata,class)
+testdata$Dependents = ifelse(testdata$Dependents =='NA',NA,testdata$Dependents)
+testdata$Dependents = as.numeric(testdata$Dependents)
+testdata[,c(1,6,7)] = data.frame(lapply(testdata[,c(1,6,7)],as.factor))
+
+# spliting into two kinds outliers and normal data
+T1_testdata = subset(testdata, UUL_flag == 1 | DR_flag == 1)
+T2_testdata = subset(testdata, UUL_flag == 0 & DR_flag == 0)
+
+# Check missing values
+Missing_data_Check(T2_testdata)
+Missing_data_Check(T1_testdata)
+
+# Handling missing data 
+vif(data.frame(T2_testdata[,c(2:4)]))
+T2_testdata_C = subset(T2_testdata,!is.na(Dependents))
+T2_testdata_M = subset(T2_testdata,is.na(Dependents))
+
+dependents = knn(train = scale(T2_testdata_C[,c(2,3,4)]),
+                 test = as.matrix(cbind(scale(T2_testdata_M[2]), T2_testdata_M[3], scale(T2_testdata_M[4]))),
+                 cl = as.factor(T2_testdata_C$Dependents),
+                 k = 3,
+                 prob = F)
+T2_testdata_M$Dependents = dependents
+T2_testdata = rbind(T2_testdata_C,T2_testdata_M)
+rm(list = c('T2_testdata_C','T2_testdata_M'))
+Missing_data_Check(T2_testdata)
+
+vif(data.frame(T1_testdata[,c(2:4)]))
+T1_testdata_C = subset(T1_testdata,!is.na(Dependents))
+T1_testdata_M = subset(T1_testdata,is.na(Dependents))
+
+dependents = knn(train = scale(T1_testdata_C[,c(2,3,4)]),
+                 test = as.matrix(cbind(scale(T1_testdata_M[2]), T1_testdata_M[3], scale(T1_testdata_M[4]))),
+                 cl = as.factor(T1_testdata_C$Dependents),
+                 k = 9,
+                 prob = F)
+T1_testdata_M$Dependents = dependents
+T1_testdata = rbind(T1_testdata_C,T1_testdata_M)
+rm(list = c('T1_testdata_C','T1_testdata_M'))
+Missing_data_Check(T1_testdata)
+
+## Model building for T2 - 94:6 target varibale ratio
+T2_testdata = T2_testdata[,1:5]
+T2_testdata$Dependents = as.numeric(T2_testdata$Dependents)
+
+ggplot(data = T2_testdata)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
+# SMOTE has oversampled the major class area too - so trying boundary SMOTE
+T2_testdata_SMOTE_B = BLSMOTE(as.data.frame(T2_testdata[2:5]),as.numeric(T2_testdata$DLQs),
+                              K=4,C=3,dupSize=15,method =c("type1"))
+table(T2_testdata_SMOTE_B$data$class)/length(T2_testdata_SMOTE_B$data$class)
+table(T2_testdata$DLQs)/length(T2_testdata$DLQs)
+T2_testdata_SMOTE_BS = T2_testdata_SMOTE_B$data
+T2_testdata_SMOTE_BS$DLQs = ifelse(T2_testdata_SMOTE_BS$class == 1, 0, 1)
+T2_testdata_SMOTE_BS = T2_testdata_SMOTE_BS[,c(6,1,2,3,4)]
+T2_testdata_SMOTE_BS$DLQs = as.factor(T2_testdata_SMOTE_BS$DLQs)
+
+ggplot(data = T2_testdata_SMOTE_BS)+
+  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                 #shape = as.factor(Dependents), size = Credit_Loans, 
+                 color = DLQs))
+
+T2_testdata_Scale = T2_testdata
+T2_testdata_Scale[,-1] = scale(T2_testdata_Scale[,-1]) 
+
+# Model Testing againist Test data ----
+
+prob_pred = predict(T2_LR, type = 'response', newdata = T2_testdata_Scale[-1])
+y_pred = ifelse(prob_pred > 0.55, 1, 0)
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
+LR_Speci_Hold 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
