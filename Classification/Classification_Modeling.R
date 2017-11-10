@@ -145,6 +145,8 @@ ggplot(data = T2_traindata_SMOTE_BS)+
 split = sample.split(T2_traindata_SMOTE_BS$DLQs, SplitRatio = 0.75)
 training_set = subset(T2_traindata_SMOTE_BS, split == TRUE)
 test_set = subset(T2_traindata_SMOTE_BS, split == FALSE)
+T2_traindata_SMOTE_BS_scaled = T2_traindata_SMOTE_BS
+T2_traindata_SMOTE_BS_scaled[-1] = scale(T2_traindata_SMOTE_BS_scaled[-1])
 training_set_scaled = training_set
 training_set_scaled[-1] = scale(training_set_scaled[-1])
 test_set_scaled = test_set
@@ -512,16 +514,49 @@ ggplot(data = T2_testdata_SMOTE_BS)+
                  #shape = as.factor(Dependents), size = Credit_Loans, 
                  color = DLQs))
 
-T2_testdata_Scale = T2_testdata
+T2_testdata_Scale = T2_testdata_SMOTE_BS
 T2_testdata_Scale[,-1] = scale(T2_testdata_Scale[,-1]) 
 
-# Model Testing againist Test data ----
+# Model Testing againist Test data LR: 48.889 KNN: 24.444  ----
 
+T2_LR = glm( formula = DLQs~., 
+             family = binomial,
+             data = T2_traindata_SMOTE_BS_scaled)
 prob_pred = predict(T2_LR, type = 'response', newdata = T2_testdata_Scale[-1])
 y_pred = ifelse(prob_pred > 0.55, 1, 0)
 CM = table(T2_testdata_Scale$DLQs,y_pred)
 LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
 LR_Speci_Hold 
+
+y_pred = knn(train =T2_traindata_SMOTE_BS_scaled[,-1],
+             test =T2_testdata_Scale[,-1],
+             cl = T2_traindata_SMOTE_BS_scaled[, 1],
+             k = 5,
+             prob = TRUE)
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+Knn_Speci_Hold = CM[4]/(CM[4]+CM[2])
+Knn_Speci_Hold
+
+T2_SVM = svm(formula = DLQs ~ .,
+             data = T2_traindata_SMOTE_BS_scaled,
+             type = 'C-classification',
+             kernel = 'radial', cost= 3, gamma= 4)
+y_pred = predict(T2_SVM, newdata = T2_testdata_Scale[-1])
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+SVM_Speci_Hold = CM[4]/(CM[4]+CM[2])
+SVM_Speci_Hold
+
+T2_NB = naiveBayes(x = T2_traindata_SMOTE_BS_scaled[-1],
+                   y = T2_traindata_SMOTE_BS_scaled$DLQs)
+
+y_pred = predict(T2_NB, newdata = T2_testdata_Scale[-1])
+CM = table(T2_testdata_Scale$DLQs,y_pred)
+NB_Speci_Hold = CM[4]/(CM[4]+CM[2])
+NB_Speci_Hold
+
+
+
+
 
 
 
