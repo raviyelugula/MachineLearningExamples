@@ -203,7 +203,8 @@ cv = lapply(folds, function(x) {
   T2_LR_KF = glm( formula = DLQs~., 
                   family = binomial,
                   data = training_fold)
-  prob_pred = predict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
+  prob_pred = pre
+  dict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
   y_pred = ifelse(prob_pred > 0.55, 1, 0)
   CM = table(test_fold[,1],y_pred)
   temp = CM[4]/(CM[4]+CM[2])
@@ -216,9 +217,41 @@ prob_pred = predict(T2_LR, type = 'response', newdata = T2_traindata_Test_BS_Sca
 y_pred = ifelse(prob_pred > 0.55, 1, 0)
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
 LR_Speci_Test = CM[4]/(CM[4]+CM[2])
-round(LR_Speci_Test*100,2)
+round(LR_Speci_Test*100,2) # underfitted
 
-# Test data prep LR: 62.33 ----
+# KNN Classification -- Specificity:Train - xxxxx K-fold Train - 88.8 Test 20.872  ---- 
+caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'knn')
+caret_tune
+caret_tune$bestTune # caret to tune for k value
+
+y_pred = knn(train =T2_traindata_Train_BS_Scaled[,-1],
+             test =T2_traindata_Test_BS_Scaled[,-1],
+             cl = T2_traindata_Train_BS_Scaled[, 1],
+             k = 9,
+             prob = TRUE)
+CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
+Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
+Knn_Speci_Test
+
+set.seed(1234)
+folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = T2_traindata_Train_BS_Scaled[-x, ]
+  test_fold = T2_traindata_Train_BS_Scaled[x, ]
+  y_pred = knn(train =training_fold[,-1],
+               test =test_fold[,-1],
+               cl = training_fold[, 1],
+               k = 9,
+               prob = TRUE)
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+Knn_Speci_KF = mean(as.numeric(cv)) #overfitted
+
+# ----
+
+# Test data prep LR: 57.67 KNN: 46 ----
 Missing_data_Check(T2_testdata)
 data_C = subset(T2_testdata,!is.na(Dependents))
 data_M = subset(T2_testdata,is.na(Dependents))
@@ -236,10 +269,28 @@ Two_D_View(T2_testdata)
 T2_testdata_BS = Boderline_SMOTE_fitting(T2_testdata,15)
 T2_testdata_BS_Scaled = Scaling(T2_testdata_BS)
 
-prob_pred = predict(T2_LR, type = 'response', newdata = T2_testdata_BS_Scaled[-1])
-y_pred = ifelse(prob_pred > 0.55, 1, 0)
-CM = table(T2_testdata_BS_Scaled$DLQs,y_pred)
-LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
-round(LR_Speci_Hold*100,2) 
+T2_traindata_Complete_BS_Scaled = rbind(T2_traindata_Train_BS_Scaled, 
+                                        T2_traindata_Test_BS_Scaled)
+
+# T2_LR = glm( formula = DLQs~., 
+#              family = binomial,
+#              data = T2_traindata_Complete_BS_Scaled)
+# prob_pred = predict(T2_LR, type = 'response', newdata = T2_testdata_BS_Scaled[-1])
+# y_pred = ifelse(prob_pred > 0.55, 1, 0)
+# CM = table(T2_testdata_BS_Scaled$DLQs,y_pred)
+# LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# round(LR_Speci_Hold*100,2) # 57.67
+
+# y_pred = knn(train =T2_traindata_Complete_BS_Scaled[,-1],
+#              test =T2_testdata_BS_Scaled[,-1],
+#              cl = T2_traindata_Complete_BS_Scaled[, 1],
+#              k = 9,
+#              prob = TRUE)
+# CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+# Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
+# round(Knn_Speci_Test*100,2) # 46
+
+
+
 
 
