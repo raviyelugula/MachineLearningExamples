@@ -249,7 +249,85 @@ cv = lapply(folds, function(x) {
 })
 Knn_Speci_KF = mean(as.numeric(cv)) #overfitted
 
-# ----
+# SVM Classification -- Specificity:Train - 90.881 K-fold Train - 86.116 Test 87.267  ---- 
+set.seed(1234)
+caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'svmLinearWeights')
+caret_tune
+caret_tune$bestTune # caret to tune for cost and weight value - cost is 0.25 which is default
+set.seed(1234)
+tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
+                       kernal = 'radial',
+                       ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), # penalising factor for missclassification, high c => low bias, high viariance, default is 1
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) # smoothening the boundary shape sharpness, low gama => pointy bounday, low bias, high variance, default 1/dimensions
+summary(tune_svm_kernal) # tuned parameters says cost  and gamma 
+set.seed(1234)
+tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
+                       kernal = 'sigmoid',
+                       ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), 
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) 
+summary(tune_svm_kernal) # tuned parameters says cost  and gamma 
+set.seed(1234)
+tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
+                       kernal = 'polynomial',
+                       ranges = list(ccost = c(0.1,0.4,0.8,1,3,5,10,50,100),
+                                     gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4),
+                                     degree = c(2,3,4,5,6)))
+summary(tune_svm_kernal) # tuned parameters says cost  and gamma  and degree 
+
+for(svmType in c('C-classification','nu-classification')){
+  for(svmKernal in c('linear','polynomial','radial','sigmoid')){
+    set.seed(1234)
+    folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
+    cv = lapply(folds, function(x) {
+      training_fold = T2_traindata_Train_BS_Scaled[-x, ]
+      test_fold = T2_traindata_Train_BS_Scaled[x, ]
+      if(svmKernal == 'radial'){
+        T2_SVM = svm(formula = DLQs ~ .,
+                     data = training_fold,
+                     type = 'C-classification',
+                     kernel = svmKernal, cost = 3,gamma = 4)
+        y_pred = predict(T2_SVM, newdata = test_fold[-1])
+      }else if(svmKernal=='sigmoid'){
+        T2_SVM = svm(formula = DLQs ~ .,
+                     data = training_fold,
+                     type = 'C-classification',
+                     kernel = svmKernal, cost = 1,gamma = 4)
+        y_pred = predict(T2_SVM, newdata = test_fold[-1])
+      }else{
+        T2_SVM = svm(formula = DLQs ~ .,
+                     data = training_fold,
+                     type = 'C-classification',
+                     kernel = svmKernal)
+        y_pred = predict(T2_SVM, newdata = test_fold[-1])
+      }
+      CM = table(test_fold[,1],y_pred)
+      temp = CM[4]/(CM[4]+CM[2])
+      return(temp)
+    })
+    specificity_SVM = round(mean(as.numeric(cv)),5)*100
+    print.noquote(paste0(svmKernal,'-kernal ',svmType,' has K-fold specificity of ',specificity_SVM))
+  }
+} # choose radial kernal with C-Classification as it has highest 86.116
+
+# [1] linear-kernal C-classification has K-fold specificity of 80.112
+# [1] polynomial-kernal C-classification has K-fold specificity of 60.208
+# [1] radial-kernal C-classification has K-fold specificity of 86.116
+# [1] sigmoid-kernal C-classification has K-fold specificity of 40.947
+# [1] linear-kernal nu-classification has K-fold specificity of 80.112
+# [1] polynomial-kernal nu-classification has K-fold specificity of 60.208
+# [1] radial-kernal nu-classification has K-fold specificity of 86.116
+# [1] sigmoid-kernal nu-classification has K-fold specificity of 40.947
+T2_SVM = svm(formula = DLQs ~ .,
+             data = T2_traindata_Train_BS_Scaled,
+             type = 'C-classification',
+             kernel = 'radial', cost= 3, gamma= 4)
+y_pred = predict(T2_SVM, newdata = T2_traindata_Train_BS_Scaled[-1])
+CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
+SVM_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+y_pred = predict(T2_SVM, newdata = T2_traindata_Test_BS_Scaled[-1])
+CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
+SVM_Speci_Test = CM[4]/(CM[4]+CM[2])
 
 # Test data prep LR: 57.67 KNN: 46 ----
 Missing_data_Check(T2_testdata)
