@@ -11,8 +11,9 @@ require(e1071) ## SVM
 require(rpart) ## CART - Decision Tree
 require(randomForest) ## RandomForest
 require(neuralnet) ## ANN
+require(gridExtra) ## Multiple plots in single pannel
 
-# reading the data
+# reading the data ----
 excel_sheets(path = 'training.xlsx')
 traindata = read_excel(path = 'training.xlsx', sheet = 'training')
 
@@ -44,7 +45,7 @@ Missing_data_Check <- function(data_set){
 Missing_data_Check(T2_traindata)
 Missing_data_Check(T1_traindata)
 
-# Handling missing data 
+# Handling missing data  -----
 vif(data.frame(T2_traindata[,c(2:4)]))
 T2_traindata_C = subset(T2_traindata,!is.na(Dependents))
 T2_traindata_M = subset(T2_traindata,is.na(Dependents))
@@ -106,7 +107,7 @@ T1_traindata = rbind(T1_traindata_C,T1_traindata_M)
 rm(list = c('T1_traindata_C','T1_traindata_M'))
 Missing_data_Check(T1_traindata)
 
-## Model building for T2 - 94:6 target varibale ratio
+## balanced dataset building for T2 - 94:6 target varibale ratio ----
 T2_traindata = T2_traindata[,1:5]
 T2_traindata$Dependents = as.numeric(T2_traindata$Dependents)
 
@@ -593,31 +594,38 @@ CM = table(T2_testdata_Scale_ANN$DLQs,y_pred)
 ANN_Speci_Hold = CM[4]/(CM[4]+CM[2])
 ANN_Speci_Hold
 
+## Training data -- NON Ouliers Visuals in 2D ------
+P1 = ggplot(data = T2_traindata_SMOTE_BS)+
+        geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
+                       color = DLQs),show.legend = F)
+P2 = ggplot(data = T2_traindata_SMOTE_BS)+
+        geom_point(aes(x = Dependents, y = Credit_Loans,
+                       color = DLQs),show.legend = F)
+P3 = ggplot(data = T2_traindata_SMOTE_BS)+
+        geom_point(aes(x = Utlz_UnsecLines, y = Credit_Loans,
+                       color = DLQs),show.legend = F)
+P4 = ggplot(data = T2_traindata_SMOTE_BS)+
+        geom_point(aes(x = Dependents, y = DebtRatio,
+                       color = DLQs),show.legend = F)
+grid.arrange(P1, P2, P3,P4, ncol = 2, nrow = 2)
 
-
-ggplot(data = T2_testdata_SMOTE_BS)+
+## Test data 
+T1 = ggplot(data = T2_testdata_SMOTE_BS)+
   geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
-                 #shape = as.factor(Dependents), size = Credit_Loans, 
-                 color = DLQs))
-ggplot(data = T2_testdata_SMOTE_BS)+
+                 color = DLQs),show.legend = F)
+T2 = ggplot(data = T2_testdata_SMOTE_BS)+
   geom_point(aes(x = Dependents, y = Credit_Loans,
-                 #shape = as.factor(Dependents), size = Credit_Loans, 
-                 color = DLQs))
+                 color = DLQs),show.legend = F)
+T3 = ggplot(data = T2_testdata_SMOTE_BS)+
+  geom_point(aes(x = Utlz_UnsecLines, y = Credit_Loans,
+                 color = DLQs),show.legend = F)
+T4 = ggplot(data = T2_testdata_SMOTE_BS)+
+  geom_point(aes(x = Dependents, y = DebtRatio,
+                 color = DLQs),show.legend = F)
 
-ggplot(data = T2_traindata_SMOTE_BS)+
-  geom_point(aes(x = Utlz_UnsecLines, y = DebtRatio,
-                 #shape = as.factor(Dependents), size = Credit_Loans, 
-                 color = DLQs))
-ggplot(data = T2_traindata_SMOTE_BS)+
-  geom_point(aes(x = Dependents, y = Credit_Loans,
-                 #shape = as.factor(Dependents), size = Credit_Loans, 
-                 color = DLQs))
+grid.arrange(T1, T2, T3,T4, ncol = 2, nrow = 2)
 
-
-
-
-
-
+grid.arrange(P1, P2, P3,P4,T1, T2, T3,T4, ncol = 4, nrow = 2)
 
 
 
