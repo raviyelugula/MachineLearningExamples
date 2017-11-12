@@ -401,8 +401,83 @@ y_pred = predict(T2_CART, newdata = T2_traindata_Test_BS_Scaled[-1],type='class'
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
 CART_Speci_Test = CM[4]/(CM[4]+CM[2]) # overfitted
 
+# Random Forest -- Specificity:Train - 88.2 K-fold Train - 83.96 Test 40.5 ------
+set.seed(1234)
+T2_RF = randomForest(DLQs ~ ., data = T2_traindata_Train_BS_Scaled, 
+                     ntree=500, mtry = 2, nodesize = 40,
+                     importance=TRUE)
+plot(T2_RF) ## 150 tree from OOB
+caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'rf')
+caret_tune
+caret_tune$bestTune # mtry - Tunning 
 
-# Test data prep LR: 57.67 KNN: 46 ----
+set.seed(1234)
+T2_RF = tuneRF(x = T2_traindata_Train_BS_Scaled[,-1], 
+               y=T2_traindata_Train_BS_Scaled$DLQs,
+               mtryStart = 2,
+               ntreeTry=150, 
+               stepFactor = 1, ## 1st try 2 variables, next 4 , next 5 , next 6 MtryStart*Stepfactor 
+               improve = 0.001, ## delta OOB 
+               trace=TRUE, 
+               plot = TRUE,
+               doBest = TRUE,
+               nodesize = 20, 
+               importance=TRUE
+) # random Forest tuning also lead to mtry = 2
+
+y_pred = predict(T2_RF, newdata = T2_traindata_Train_BS_Scaled[-1], type='class')
+CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
+RF_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+set.seed(1234)
+folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = T2_traindata_Train_BS_Scaled[-x, ]
+  test_fold = T2_traindata_Train_BS_Scaled[x, ]
+  T2_RF_temp = randomForest(DLQs ~ ., data = training_fold, 
+                            ntree=150, mtry = 2, nodesize = 40)
+  y_pred = predict(T2_RF_temp, newdata = test_fold[-1], type='class')
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+RF_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+y_pred = predict(T2_RF, newdata = T2_traindata_Test_BS_Scaled[-1], type='class')
+CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
+RF_Speci_Test = CM[4]/(CM[4]+CM[2]) # overfitted
+
+# ANN -- Specificity:Train - 82.44 K-fold Train - xxxxxx Test 38.31 ----
+training_set_scaled_ANN = T2_traindata_Train_BS_Scaled
+training_set_scaled_ANN$DLQs = as.numeric(as.character(training_set_scaled_ANN$DLQs))
+test_set_scaled_ANN = T2_traindata_Test_BS_Scaled
+test_set_scaled_ANN$DLQs = as.numeric(as.character(test_set_scaled_ANN$DLQs))
+
+n = names(training_set_scaled_ANN)
+long_formula = as.formula(paste("DLQs ~", paste(n[!n %in% "DLQs"], collapse = " + ")))
+set.seed(123)
+T2_ANN = neuralnet(formula = long_formula,
+                   data = training_set_scaled_ANN,
+                   hidden = c(4,4),
+                   err.fct = "sse",
+                   linear.output = FALSE,
+                   lifesign = "full",
+                   lifesign.step = 1,
+                   threshold = 0.05,
+                   stepmax = 100000)
+plot(T2_ANN)
+y_pred = ifelse(T2_ANN$net.result[[1]] >= 0.5,1,0)
+CM = table(training_set_scaled_ANN[,1],y_pred)
+ANN_Speci_Train = CM[4]/(CM[4]+CM[2])
+ANN_Speci_Train
+
+y_pred = compute(T2_ANN,test_set_scaled_ANN[,-1])
+y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
+CM = table(test_set_scaled_ANN[,1],y_pred)
+ANN_Speci_Test = CM[4]/(CM[4]+CM[2])
+ANN_Speci_Test # overfitted
+
+# Test data prep LR: 57.67 KNN: 46 SVM:31 NB: 73.33 CART: 75.67 RF: 47.34 ANN: 58.667 ----
 Missing_data_Check(T2_testdata)
 data_C = subset(T2_testdata,!is.na(Dependents))
 data_M = subset(T2_testdata,is.na(Dependents))
@@ -465,6 +540,35 @@ NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #79.33
 # CM = table(T2_testdata_BS_Scaled[,1],y_pred)
 # CART_Speci_Hold = CM[4]/(CM[4]+CM[2])
 
+# T2_RF = randomForest(DLQs ~ ., data = T2_traindata_Complete_BS_Scaled,
+#                      ntree=150, mtry = 2, nodesize = 40,
+#                      importance=TRUE)
+# y_pred = predict(T2_RF, newdata = T2_testdata_BS_Scaled[-1], type='class')
+# CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+# RF_Speci_Hold = CM[4]/(CM[4]+CM[2]) # 47.34
+
+# training_set_scaled_ANN = T2_traindata_Complete_BS_Scaled
+# training_set_scaled_ANN$DLQs = as.numeric(as.character(training_set_scaled_ANN$DLQs))
+# test_set_scaled_ANN = T2_testdata_BS_Scaled
+# test_set_scaled_ANN$DLQs = as.numeric(as.character(test_set_scaled_ANN$DLQs))
+# 
+# n = names(training_set_scaled_ANN)
+# long_formula = as.formula(paste("DLQs ~", paste(n[!n %in% "DLQs"], collapse = " + ")))
+# set.seed(123)
+# T2_ANN = neuralnet(formula = long_formula,
+#                    data = training_set_scaled_ANN,
+#                    hidden = c(4,4),
+#                    err.fct = "sse",
+#                    linear.output = FALSE,
+#                    lifesign = "full",
+#                    lifesign.step = 1,
+#                    threshold = 0.05,
+#                    stepmax = 100000)
+# y_pred = compute(T2_ANN,test_set_scaled_ANN[,-1])
+# y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
+# CM = table(test_set_scaled_ANN[,1],y_pred)
+# ANN_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# ANN_Speci_Hold # 58.667
 
 
 
