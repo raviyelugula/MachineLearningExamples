@@ -249,7 +249,7 @@ cv = lapply(folds, function(x) {
 })
 Knn_Speci_KF = mean(as.numeric(cv)) #overfitted
 
-# SVM Classification -- Specificity:Train - 90.881 K-fold Train - 86.116 Test 87.267  ---- 
+# SVM Classification -- Specificity:Train - 93.27 K-fold Train - 88.8 Test 87.23  ---- 
 set.seed(1234)
 caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'svmLinearWeights')
 caret_tune
@@ -259,20 +259,20 @@ tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
                        kernal = 'radial',
                        ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), # penalising factor for missclassification, high c => low bias, high viariance, default is 1
                                      gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) # smoothening the boundary shape sharpness, low gama => pointy bounday, low bias, high variance, default 1/dimensions
-summary(tune_svm_kernal) # tuned parameters says cost  and gamma 
+summary(tune_svm_kernal) # tuned parameters says cost 3 and gamma 4
 set.seed(1234)
 tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
                        kernal = 'sigmoid',
                        ranges = list(cost = c(0.1,0.4,0.8,1,3,5,10,50,100), 
                                      gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4))) 
-summary(tune_svm_kernal) # tuned parameters says cost  and gamma 
+summary(tune_svm_kernal) # tuned parameters says cost 3 and gamma 4
 set.seed(1234)
 tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
                        kernal = 'polynomial',
                        ranges = list(ccost = c(0.1,0.4,0.8,1,3,5,10,50,100),
                                      gamma = c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,4),
                                      degree = c(2,3,4,5,6)))
-summary(tune_svm_kernal) # tuned parameters says cost  and gamma  and degree 
+summary(tune_svm_kernal) # tuned parameters says cost 0.1 and gamma 4 and degree 2
 
 for(svmType in c('C-classification','nu-classification')){
   for(svmKernal in c('linear','polynomial','radial','sigmoid')){
@@ -291,13 +291,19 @@ for(svmType in c('C-classification','nu-classification')){
         T2_SVM = svm(formula = DLQs ~ .,
                      data = training_fold,
                      type = 'C-classification',
-                     kernel = svmKernal, cost = 1,gamma = 4)
+                     kernel = svmKernal, cost = 3,gamma = 4)
+        y_pred = predict(T2_SVM, newdata = test_fold[-1])
+      }else if(svmKernal=='polynomial'){
+        T2_SVM = svm(formula = DLQs ~ .,
+                     data = training_fold,
+                     type = 'C-classification',
+                     kernel = svmKernal, cost = 0.1,gamma = 4 ,degre = 2)
         y_pred = predict(T2_SVM, newdata = test_fold[-1])
       }else{
         T2_SVM = svm(formula = DLQs ~ .,
                      data = training_fold,
                      type = 'C-classification',
-                     kernel = svmKernal)
+                     kernel = svmKernal, cost =0.25)
         y_pred = predict(T2_SVM, newdata = test_fold[-1])
       }
       CM = table(test_fold[,1],y_pred)
@@ -307,16 +313,16 @@ for(svmType in c('C-classification','nu-classification')){
     specificity_SVM = round(mean(as.numeric(cv)),5)*100
     print.noquote(paste0(svmKernal,'-kernal ',svmType,' has K-fold specificity of ',specificity_SVM))
   }
-} # choose radial kernal with C-Classification as it has highest 86.116
+} # choose radial kernal with C-Classification as it has highest 88.8
 
-# [1] linear-kernal C-classification has K-fold specificity of 80.112
-# [1] polynomial-kernal C-classification has K-fold specificity of 60.208
-# [1] radial-kernal C-classification has K-fold specificity of 86.116
-# [1] sigmoid-kernal C-classification has K-fold specificity of 40.947
-# [1] linear-kernal nu-classification has K-fold specificity of 80.112
-# [1] polynomial-kernal nu-classification has K-fold specificity of 60.208
-# [1] radial-kernal nu-classification has K-fold specificity of 86.116
-# [1] sigmoid-kernal nu-classification has K-fold specificity of 40.947
+# [1] linear-kernal C-classification has K-fold specificity of 83.961
+# [1] polynomial-kernal C-classification has K-fold specificity of 5.446
+# [1] radial-kernal C-classification has K-fold specificity of 88.8
+# [1] sigmoid-kernal C-classification has K-fold specificity of 37.542
+# [1] linear-kernal nu-classification has K-fold specificity of 83.961
+# [1] polynomial-kernal nu-classification has K-fold specificity of 5.446
+# [1] radial-kernal nu-classification has K-fold specificity of 88.8
+# [1] sigmoid-kernal nu-classification has K-fold specificity of 37.542
 T2_SVM = svm(formula = DLQs ~ .,
              data = T2_traindata_Train_BS_Scaled,
              type = 'C-classification',
@@ -327,7 +333,74 @@ SVM_Speci_Train = CM[4]/(CM[4]+CM[2])
 
 y_pred = predict(T2_SVM, newdata = T2_traindata_Test_BS_Scaled[-1])
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
-SVM_Speci_Test = CM[4]/(CM[4]+CM[2])
+SVM_Speci_Test = CM[4]/(CM[4]+CM[2]) # dropped in Test, overfitted, but will consider for Test set, as k-fold is close to train_test
+
+# Naive Bayes -- Specificity:Train - 81.1 K-fold Train - 92.564 Test 87.53   ----
+T2_NB = naiveBayes(x = T2_traindata_Train_BS_Scaled[-1],
+                   y = T2_traindata_Train_BS_Scaled$DLQs)
+
+y_pred = predict(T2_NB, newdata = T2_traindata_Train_BS_Scaled[-1])
+CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
+NB_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+set.seed(1234)
+folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = T2_traindata_Train_BS_Scaled[-x, ]
+  test_fold = T2_traindata_Train_BS_Scaled[x, ]
+  T2_NB = naiveBayes(x = training_fold[-1],
+                     y = training_fold$DLQs)
+  y_pred = predict(T2_SVM, newdata = test_fold[-1])
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+NB_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+y_pred = predict(T2_NB, newdata = T2_traindata_Test_BS_Scaled[-1])
+CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
+NB_Speci_Test = CM[4]/(CM[4]+CM[2]) # moves to predict against test
+
+# CART -- Specificity:Train - 75.36 K-fold Train - 78.59 Test 39.25    --------
+caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'rpart')
+caret_tune
+caret_tune$bestTune # CP - Tunning 
+
+T2_CART_temp = rpart(formula = DLQs ~ ., 
+                     data = T2_traindata_Train_BS_Scaled, 
+                     method = "class", 
+                     minsplit= 225, 
+                     cp = 0, 
+                     xval = 7)
+printcp(T2_CART_temp)
+plotcp(T2_CART_temp)
+T2_CART = prune(T2_CART_temp, cp= 0.03315412186 ,"CP")
+y_pred = predict(T2_CART, newdata = T2_traindata_Train_BS_Scaled[-1], type='class')
+CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
+CART_Speci_Train = CM[4]/(CM[4]+CM[2])
+
+set.seed(1234)
+folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
+cv = lapply(folds, function(x) {
+  training_fold = T2_traindata_Train_BS_Scaled[-x, ]
+  test_fold = T2_traindata_Train_BS_Scaled[x, ]
+  T2_CART_temp = rpart(formula = DLQs ~ ., 
+                       data = training_fold, 
+                       method = "class", 
+                       minsplit= 225, 
+                       cp = 0.05284974, 
+                       xval = 7)
+  y_pred = predict(T2_CART_temp, newdata = test_fold[-1], type='class')
+  CM = table(test_fold[,1],y_pred)
+  temp = CM[4]/(CM[4]+CM[2])
+  return(temp)
+})
+CART_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+y_pred = predict(T2_CART, newdata = T2_traindata_Test_BS_Scaled[-1],type='class')
+CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
+CART_Speci_Test = CM[4]/(CM[4]+CM[2]) # overfitted
+
 
 # Test data prep LR: 57.67 KNN: 46 ----
 Missing_data_Check(T2_testdata)
@@ -365,8 +438,36 @@ T2_traindata_Complete_BS_Scaled = rbind(T2_traindata_Train_BS_Scaled,
 #              k = 9,
 #              prob = TRUE)
 # CM = table(T2_testdata_BS_Scaled[,1],y_pred)
-# Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
-# round(Knn_Speci_Test*100,2) # 46
+# Knn_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# round(Knn_Speci_Hold*100,2) # 46
+
+T2_SVM = svm(formula = DLQs ~ .,
+             data = T2_traindata_Complete_BS_Scaled,
+             type = 'C-classification',
+             kernel = 'radial', cost= 3, gamma= 4)
+y_pred = predict(T2_SVM, newdata = T2_testdata_BS_Scaled[-1])
+CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+SVM_Speci_Hold = CM[4]/(CM[4]+CM[2]) #31
+
+T2_NB = naiveBayes(x = T2_traindata_Complete_BS_Scaled[-1],
+                   y = T2_traindata_Complete_BS_Scaled$DLQs)
+y_pred = predict(T2_NB, newdata = T2_testdata_BS_Scaled[-1])
+CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #79.33
+
+# T2_CART = rpart(formula = DLQs ~ ., 
+#                      data = T2_traindata_Complete_BS_Scaled, 
+#                      method = "class", 
+#                      minsplit= 225, 
+#                      cp = 0.05284974, 
+#                      xval = 7)
+# y_pred = predict(T2_CART, newdata = T2_testdata_BS_Scaled[-1],type='class')
+# CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+# CART_Speci_Hold = CM[4]/(CM[4]+CM[2])
+
+
+
+
 
 
 
