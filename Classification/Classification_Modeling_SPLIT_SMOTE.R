@@ -42,6 +42,18 @@ Data_Building <- function(data){
 }
 traindata = Data_Building(traindata)
 testdata = Data_Building(testdata)
+
+# Outliers Visualization
+Boxplot_outliers <- function(data){
+  par(mfrow=c(2,2))
+  B2 = boxplot(as.numeric(data$Utlz_UnsecLines),main="UnsecuredLines Utilization",col="grey", pars=list(outcol="red"))
+  B3 = boxplot(as.numeric(data$DebtRatio), main = "DebtRatio",col="grey", pars=list(outcol="red"))
+  B4 = boxplot(as.numeric(data$Credit_Loans),main = "Credit_Loans",col="grey", pars=list(outcol="red"))
+  B5 = boxplot(as.numeric(data$Dependents), main = "Dependents",col="grey", pars=list(outcol="red"))
+  par(mfrow=c(1,1))
+}
+Boxplot_outliers(traindata)
+
 # seperating into two kinds outliers and normal data ----
 T1_traindata = subset(traindata, UUL_flag == 1 | DR_flag == 1)
 T2_traindata = subset(traindata, UUL_flag == 0 & DR_flag == 0)
@@ -129,6 +141,7 @@ Target_Ratio_Check <- function(data){
   print(round(table(data$DLQs)[1]/sum(table(data$DLQs)),2))
   Two_D_View(data)
 }
+dev.off()
 Target_Ratio_Check(T2_traindata_Test) #95:5 
 Target_Ratio_Check(T2_traindata_Train) #94:6
 # SMOTE for treating imbalance data set ----
@@ -149,7 +162,7 @@ T2_traindata_Test_SMOTEd = SMOTE_fitting(T2_traindata_Test,600,300)
 Two_D_View(T2_traindata_Train)
 T2_traindata_Train_SMOTEd = SMOTE_fitting(T2_traindata_Train,600,300)
 
-# SMOTE has oversampled the major class area too - so trying boundary SMOTE ----
+# SMOTE has oversampled the major class area too - so trying borderline SMOTE ----
 Boderline_SMOTE_fitting <- function(data,i){
   set.seed(1234)
   data_SMOTE_B = BLSMOTE(as.data.frame(data[2:5]),as.numeric(data$DLQs),
@@ -169,7 +182,7 @@ Two_D_View(T2_traindata_Test)
 T2_traindata_Test_BS = Boderline_SMOTE_fitting(T2_traindata_Test,25) #70:30
 
 Two_D_View(T2_traindata_Train)
-T2_traindata_Train_BS = Boderline_SMOTE_fitting(T2_traindata_Train,25) #70:30
+T2_traindata_Train_BS = Boderline_SMOTE_fitting(T2_traindata_Train,25) 
 rm(list = c('T2_traindata_Test_SMOTEd','T2_traindata_Train_SMOTEd')) # Removing as SMOTE has overfitted the majored regions too
 
 # Building a Scaled data set for classification models ----
@@ -203,8 +216,7 @@ cv = lapply(folds, function(x) {
   T2_LR_KF = glm( formula = DLQs~., 
                   family = binomial,
                   data = training_fold)
-  prob_pred = pre
-  dict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
+  prob_pred = predict(T2_LR_KF, type = 'response', newdata = test_fold[-1])
   y_pred = ifelse(prob_pred > 0.55, 1, 0)
   CM = table(test_fold[,1],y_pred)
   temp = CM[4]/(CM[4]+CM[2])
@@ -219,7 +231,8 @@ CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
 LR_Speci_Test = CM[4]/(CM[4]+CM[2])
 round(LR_Speci_Test*100,2) # underfitted
 
-# KNN Classification -- Specificity:Train - xxxxx K-fold Train - 88.8 Test 20.872  ---- 
+# KNN Classification -- Specificity:Train - xxxxx K-fold Train - 89.24 Test 18.38  ---- 
+set.seed(1234)
 caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'knn')
 caret_tune
 caret_tune$bestTune # caret to tune for k value
@@ -227,7 +240,7 @@ caret_tune$bestTune # caret to tune for k value
 y_pred = knn(train =T2_traindata_Train_BS_Scaled[,-1],
              test =T2_traindata_Test_BS_Scaled[,-1],
              cl = T2_traindata_Train_BS_Scaled[, 1],
-             k = 9,
+             k = 7,
              prob = TRUE)
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
 Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
@@ -241,7 +254,7 @@ cv = lapply(folds, function(x) {
   y_pred = knn(train =training_fold[,-1],
                test =test_fold[,-1],
                cl = training_fold[, 1],
-               k = 9,
+               k = 7,
                prob = TRUE)
   CM = table(test_fold[,1],y_pred)
   temp = CM[4]/(CM[4]+CM[2])
@@ -249,11 +262,11 @@ cv = lapply(folds, function(x) {
 })
 Knn_Speci_KF = mean(as.numeric(cv)) #overfitted
 
-# SVM Classification -- Specificity:Train - 93.27 K-fold Train - 88.8 Test 87.23  ---- 
+# SVM Classification -- Specificity:Train - 93.27 K-fold Train - 88.8 Test 8.723  ---- 
 set.seed(1234)
 caret_tune = train(form = DLQs~ ., data = T2_traindata_Train_BS_Scaled, method = 'svmLinearWeights')
 caret_tune
-caret_tune$bestTune # caret to tune for cost and weight value - cost is 0.25 which is default
+caret_tune$bestTune # caret to tune for cost and weight value - cost is 0.25
 set.seed(1234)
 tune_svm_kernal = tune(svm, DLQs~ ., data = T2_traindata_Train_BS_Scaled,
                        kernal = 'radial',
@@ -335,14 +348,7 @@ y_pred = predict(T2_SVM, newdata = T2_traindata_Test_BS_Scaled[-1])
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
 SVM_Speci_Test = CM[4]/(CM[4]+CM[2]) # dropped in Test, overfitted, but will consider for Test set, as k-fold is close to train_test
 
-# Naive Bayes -- Specificity:Train - 81.1 K-fold Train - 92.564 Test 87.53   ----
-T2_NB = naiveBayes(x = T2_traindata_Train_BS_Scaled[-1],
-                   y = T2_traindata_Train_BS_Scaled$DLQs)
-
-y_pred = predict(T2_NB, newdata = T2_traindata_Train_BS_Scaled[-1])
-CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
-NB_Speci_Train = CM[4]/(CM[4]+CM[2])
-
+# Naive Bayes -- Specificity:Train - 81.1 K-fold Train - 81.0 Test 87.53   ----
 set.seed(1234)
 folds = createFolds(T2_traindata_Train_BS_Scaled$DLQs, k = 10)
 cv = lapply(folds, function(x) {
@@ -350,12 +356,19 @@ cv = lapply(folds, function(x) {
   test_fold = T2_traindata_Train_BS_Scaled[x, ]
   T2_NB = naiveBayes(x = training_fold[-1],
                      y = training_fold$DLQs)
-  y_pred = predict(T2_SVM, newdata = test_fold[-1])
+  y_pred = predict(T2_NB, newdata = test_fold[-1])
   CM = table(test_fold[,1],y_pred)
   temp = CM[4]/(CM[4]+CM[2])
   return(temp)
 })
 NB_Speci_KF = round(mean(as.numeric(cv)),5)*100
+
+T2_NB = naiveBayes(x = T2_traindata_Train_BS_Scaled[-1],
+                   y = T2_traindata_Train_BS_Scaled$DLQs)
+
+y_pred = predict(T2_NB, newdata = T2_traindata_Train_BS_Scaled[-1])
+CM = table(T2_traindata_Train_BS_Scaled[,1],y_pred)
+NB_Speci_Train = CM[4]/(CM[4]+CM[2])
 
 y_pred = predict(T2_NB, newdata = T2_traindata_Test_BS_Scaled[-1])
 CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
@@ -492,11 +505,19 @@ rm(list = c('data_C','data_M'))
 Missing_data_Check(T2_testdata)
 T2_testdata$Dependents = as.numeric(T2_testdata$Dependents)
 Two_D_View(T2_testdata)
-T2_testdata_BS = Boderline_SMOTE_fitting(T2_testdata,15)
+set.seed(1234)
+T2_testdata_BS = Boderline_SMOTE_fitting(T2_testdata,14)
 T2_testdata_BS_Scaled = Scaling(T2_testdata_BS)
 
 T2_traindata_Complete_BS_Scaled = rbind(T2_traindata_Train_BS_Scaled, 
                                         T2_traindata_Test_BS_Scaled)
+T2_NB = naiveBayes(x = T2_traindata_Complete_BS_Scaled[-1],
+                   y = T2_traindata_Complete_BS_Scaled$DLQs)
+y_pred = predict(T2_NB, newdata = T2_testdata_BS_Scaled[-1])
+CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #79.33
+
+#### Below models are not ran due to unstable models -----
 
 # T2_LR = glm( formula = DLQs~., 
 #              family = binomial,
@@ -516,19 +537,13 @@ T2_traindata_Complete_BS_Scaled = rbind(T2_traindata_Train_BS_Scaled,
 # Knn_Speci_Hold = CM[4]/(CM[4]+CM[2])
 # round(Knn_Speci_Hold*100,2) # 46
 
-T2_SVM = svm(formula = DLQs ~ .,
-             data = T2_traindata_Complete_BS_Scaled,
-             type = 'C-classification',
-             kernel = 'radial', cost= 3, gamma= 4)
-y_pred = predict(T2_SVM, newdata = T2_testdata_BS_Scaled[-1])
-CM = table(T2_testdata_BS_Scaled[,1],y_pred)
-SVM_Speci_Hold = CM[4]/(CM[4]+CM[2]) #31
-
-T2_NB = naiveBayes(x = T2_traindata_Complete_BS_Scaled[-1],
-                   y = T2_traindata_Complete_BS_Scaled$DLQs)
-y_pred = predict(T2_NB, newdata = T2_testdata_BS_Scaled[-1])
-CM = table(T2_testdata_BS_Scaled[,1],y_pred)
-NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #79.33
+# T2_SVM = svm(formula = DLQs ~ .,
+#              data = T2_traindata_Complete_BS_Scaled,
+#              type = 'C-classification',
+#              kernel = 'radial', cost= 3, gamma= 4)
+# y_pred = predict(T2_SVM, newdata = T2_testdata_BS_Scaled[-1])
+# CM = table(T2_testdata_BS_Scaled[,1],y_pred)
+# SVM_Speci_Hold = CM[4]/(CM[4]+CM[2]) #31
 
 # T2_CART = rpart(formula = DLQs ~ ., 
 #                      data = T2_traindata_Complete_BS_Scaled, 

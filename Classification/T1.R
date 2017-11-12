@@ -348,78 +348,78 @@ T1_testdata_BS_Scaled = Scaling(T1_testdata_BS)
 
 T1_traindata_Complete_BS_Scaled = rbind(T1_traindata_Train_BS_Scaled, 
                                         T1_traindata_Test_BS_Scaled)
-
-T1_LR = glm( formula = DLQs~.,
-             family = binomial,
-             data = T1_traindata_Complete_BS_Scaled)
-prob_pred = predict(T1_LR, type = 'response', newdata = T1_testdata_BS_Scaled[-1])
-y_pred = ifelse(prob_pred > 0.4, 1, 0)
-CM = table(T1_testdata_BS_Scaled$DLQs,y_pred)
-LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
-round(LR_Speci_Hold*100,2) # 49.07
-
-y_pred = knn(train =T1_traindata_Complete_BS_Scaled[,-1],
-             test =T1_testdata_BS_Scaled[,-1],
-             cl = T1_traindata_Complete_BS_Scaled[, 1],
-             k = 5,
-             prob = TRUE)
-CM = table(T1_testdata_BS_Scaled[,1],y_pred)
-Knn_Speci_Hold = CM[4]/(CM[4]+CM[2])
-round(Knn_Speci_Hold*100,2) # 71.3
-
-T1_SVM = svm(formula = DLQs ~ .,
-             data = T1_traindata_Complete_BS_Scaled,
-             type = 'C-classification',
-             kernel = 'radial', cost= 50, gamma= 9)
-y_pred = predict(T1_SVM, newdata = T1_testdata_BS_Scaled[-1])
-CM = table(T1_testdata_BS_Scaled[,1],y_pred)
-SVM_Speci_Hold = CM[4]/(CM[4]+CM[2]) #3.7
-
-T1_NB = naiveBayes(x = T1_traindata_Complete_BS_Scaled[-1],
-                   y = T1_traindata_Complete_BS_Scaled$DLQs)
-y_pred = predict(T1_NB, newdata = T1_testdata_BS_Scaled[-1])
-CM = table(T1_testdata_BS_Scaled[,1],y_pred)
-NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #39.81
-
 T1_CART = rpart(formula = DLQs ~ .,
-                     data = T1_traindata_Complete_BS_Scaled,
-                     method = "class",
-                     minsplit= 25,
-                     cp = 0.06535947712,
-                     xval = 7)
+                data = T1_traindata_Complete_BS_Scaled,
+                method = "class",
+                minsplit= 25,
+                cp = 0.06535947712,
+                xval = 7)
 y_pred = predict(T1_CART, newdata = T1_testdata_BS_Scaled[-1],type='class')
 CM = table(T1_testdata_BS_Scaled[,1],y_pred)
 CART_Speci_Hold = CM[4]/(CM[4]+CM[2]) #25
 
-T1_RF = randomForest(DLQs ~ ., data = T1_traindata_Complete_BS_Scaled,
-                     ntree=150, mtry = 2, nodesize = 20,
-                     importance=TRUE)
-y_pred = predict(T1_RF, newdata = T1_testdata_BS_Scaled[-1], type='class')
-CM = table(T1_testdata_BS_Scaled[,1],y_pred)
-RF_Speci_Hold = CM[4]/(CM[4]+CM[2]) # 67.59
-
-training_set_scaled_ANN = T1_traindata_Complete_BS_Scaled
-training_set_scaled_ANN$DLQs = as.numeric(as.character(training_set_scaled_ANN$DLQs))
-test_set_scaled_ANN = T1_testdata_BS_Scaled
-test_set_scaled_ANN$DLQs = as.numeric(as.character(test_set_scaled_ANN$DLQs))
-
-n = names(training_set_scaled_ANN)
-long_formula = as.formula(paste("DLQs ~", paste(n[!n %in% "DLQs"], collapse = " + ")))
-set.seed(123)
-T1_ANN = neuralnet(formula = long_formula,
-                   data = training_set_scaled_ANN,
-                   hidden = c(4),
-                   err.fct = "sse",
-                   linear.output = FALSE,
-                   lifesign = "full",
-                   lifesign.step = 1,
-                   threshold = 0.05,
-                   stepmax = 100000)
-y_pred = compute(T1_ANN,test_set_scaled_ANN[,-1])
-y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
-CM = table(test_set_scaled_ANN[,1],y_pred)
-ANN_Speci_Hold = CM[4]/(CM[4]+CM[2])
-ANN_Speci_Hold # 36.11
+# T1_LR = glm( formula = DLQs~.,
+#              family = binomial,
+#              data = T1_traindata_Complete_BS_Scaled)
+# prob_pred = predict(T1_LR, type = 'response', newdata = T1_testdata_BS_Scaled[-1])
+# y_pred = ifelse(prob_pred > 0.4, 1, 0)
+# CM = table(T1_testdata_BS_Scaled$DLQs,y_pred)
+# LR_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# round(LR_Speci_Hold*100,2) # 49.07
+# 
+# y_pred = knn(train =T1_traindata_Complete_BS_Scaled[,-1],
+#              test =T1_testdata_BS_Scaled[,-1],
+#              cl = T1_traindata_Complete_BS_Scaled[, 1],
+#              k = 5,
+#              prob = TRUE)
+# CM = table(T1_testdata_BS_Scaled[,1],y_pred)
+# Knn_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# round(Knn_Speci_Hold*100,2) # 71.3
+# 
+# T1_SVM = svm(formula = DLQs ~ .,
+#              data = T1_traindata_Complete_BS_Scaled,
+#              type = 'C-classification',
+#              kernel = 'radial', cost= 50, gamma= 9)
+# y_pred = predict(T1_SVM, newdata = T1_testdata_BS_Scaled[-1])
+# CM = table(T1_testdata_BS_Scaled[,1],y_pred)
+# SVM_Speci_Hold = CM[4]/(CM[4]+CM[2]) #3.7
+# 
+# T1_NB = naiveBayes(x = T1_traindata_Complete_BS_Scaled[-1],
+#                    y = T1_traindata_Complete_BS_Scaled$DLQs)
+# y_pred = predict(T1_NB, newdata = T1_testdata_BS_Scaled[-1])
+# CM = table(T1_testdata_BS_Scaled[,1],y_pred)
+# NB_Speci_Hold = CM[4]/(CM[4]+CM[2]) #39.81
+# 
+# 
+# T1_RF = randomForest(DLQs ~ ., data = T1_traindata_Complete_BS_Scaled,
+#                      ntree=150, mtry = 2, nodesize = 20,
+#                      importance=TRUE)
+# y_pred = predict(T1_RF, newdata = T1_testdata_BS_Scaled[-1], type='class')
+# CM = table(T1_testdata_BS_Scaled[,1],y_pred)
+# RF_Speci_Hold = CM[4]/(CM[4]+CM[2]) # 67.59
+# 
+# training_set_scaled_ANN = T1_traindata_Complete_BS_Scaled
+# training_set_scaled_ANN$DLQs = as.numeric(as.character(training_set_scaled_ANN$DLQs))
+# test_set_scaled_ANN = T1_testdata_BS_Scaled
+# test_set_scaled_ANN$DLQs = as.numeric(as.character(test_set_scaled_ANN$DLQs))
+# 
+# n = names(training_set_scaled_ANN)
+# long_formula = as.formula(paste("DLQs ~", paste(n[!n %in% "DLQs"], collapse = " + ")))
+# set.seed(123)
+# T1_ANN = neuralnet(formula = long_formula,
+#                    data = training_set_scaled_ANN,
+#                    hidden = c(4),
+#                    err.fct = "sse",
+#                    linear.output = FALSE,
+#                    lifesign = "full",
+#                    lifesign.step = 1,
+#                    threshold = 0.05,
+#                    stepmax = 100000)
+# y_pred = compute(T1_ANN,test_set_scaled_ANN[,-1])
+# y_pred = ifelse(y_pred$net.result >= 0.5,1,0)
+# CM = table(test_set_scaled_ANN[,1],y_pred)
+# ANN_Speci_Hold = CM[4]/(CM[4]+CM[2])
+# ANN_Speci_Hold # 36.11
 
 
 

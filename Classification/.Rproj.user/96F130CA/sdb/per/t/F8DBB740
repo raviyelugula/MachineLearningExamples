@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1510483022629.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "F8DBB740",
+    "lastKnownWriteTime" : 0,
+    "last_content_update" : 1510483022629,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "9069364E",
+        "caption" : "data.frame(T1_traindata_Train_BS_Scaled[, 1], y_pred)",
+        "contentUrl" : "grid_resource/gridviewer.html?env=_rs_no_env&obj=&cache_key=9069364E",
+        "displayedObservations" : 1062,
+        "environment" : "_rs_no_env",
+        "object" : "",
+        "preview" : 0,
+        "totalObservations" : 1062,
+        "variables" : 2
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
