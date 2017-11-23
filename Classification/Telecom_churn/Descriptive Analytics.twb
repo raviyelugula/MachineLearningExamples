@@ -1,0 +1,538 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+<!-- build 10300.17.0615.2100                               -->
+<workbook original-version='10.3' source-build='10.3.1 (10300.17.0615.2100)' source-platform='win' version='10.3' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <preferences>
+    <preference name='ui.encoding.shelf.height' value='24' />
+    <preference name='ui.shelf.height' value='26' />
+  </preferences>
+  <datasources>
+    <datasource caption='WA_Fn-UseC_-Telco-Customer-Chur (Telco Churn)' inline='true' name='federated.0aaseyi1md44ho0zo20qw0l0r7bd' version='10.3'>
+      <connection class='federated'>
+        <named-connections>
+          <named-connection caption='Telco Churn' name='excel-direct.0o5dlpz1xoqpjx12rlnl31sw63w5'>
+            <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:/Users/ravin/Documents/GitHub/MachineLearningExamples/Classification/Telecom_churn/Telco Churn.xlsx' interpretationMode='0' password='' server='' validate='no' />
+          </named-connection>
+        </named-connections>
+        <relation connection='excel-direct.0o5dlpz1xoqpjx12rlnl31sw63w5' name='WA_Fn-UseC_-Telco-Customer-Chur' table='[&apos;WA_Fn-UseC_-Telco-Customer-Chur$&apos;]' type='table'>
+          <columns gridOrigin='A1:U7044:no:A1:U7044:0' header='yes' outcome='6'>
+            <column datatype='string' name='customerID' ordinal='0' />
+            <column datatype='string' name='gender' ordinal='1' />
+            <column datatype='integer' name='SeniorCitizen' ordinal='2' />
+            <column datatype='string' name='Partner' ordinal='3' />
+            <column datatype='string' name='Dependents' ordinal='4' />
+            <column datatype='integer' name='tenure' ordinal='5' />
+            <column datatype='string' name='PhoneService' ordinal='6' />
+            <column datatype='string' name='MultipleLines' ordinal='7' />
+            <column datatype='string' name='InternetService' ordinal='8' />
+            <column datatype='string' name='OnlineSecurity' ordinal='9' />
+            <column datatype='string' name='OnlineBackup' ordinal='10' />
+            <column datatype='string' name='DeviceProtection' ordinal='11' />
+            <column datatype='string' name='TechSupport' ordinal='12' />
+            <column datatype='string' name='StreamingTV' ordinal='13' />
+            <column datatype='string' name='StreamingMovies' ordinal='14' />
+            <column datatype='string' name='Contract' ordinal='15' />
+            <column datatype='string' name='PaperlessBilling' ordinal='16' />
+            <column datatype='string' name='PaymentMethod' ordinal='17' />
+            <column datatype='real' name='MonthlyCharges' ordinal='18' />
+            <column datatype='real' name='TotalCharges' ordinal='19' />
+            <column datatype='string' name='Churn' ordinal='20' />
+          </columns>
+        </relation>
+        <metadata-records>
+          <metadata-record class='column'>
+            <remote-name>customerID</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[customerID]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>customerID</remote-alias>
+            <ordinal>0</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>gender</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[gender]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>gender</remote-alias>
+            <ordinal>1</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>SeniorCitizen</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[SeniorCitizen]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>SeniorCitizen</remote-alias>
+            <ordinal>2</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;I8&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>Partner</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[Partner]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>Partner</remote-alias>
+            <ordinal>3</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>Dependents</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[Dependents]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>Dependents</remote-alias>
+            <ordinal>4</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>tenure</remote-name>
+            <remote-type>20</remote-type>
+            <local-name>[tenure]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>tenure</remote-alias>
+            <ordinal>5</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;I8&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>PhoneService</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[PhoneService]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>PhoneService</remote-alias>
+            <ordinal>6</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>MultipleLines</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[MultipleLines]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>MultipleLines</remote-alias>
+            <ordinal>7</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>InternetService</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[InternetService]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>InternetService</remote-alias>
+            <ordinal>8</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>OnlineSecurity</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[OnlineSecurity]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>OnlineSecurity</remote-alias>
+            <ordinal>9</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>OnlineBackup</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[OnlineBackup]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>OnlineBackup</remote-alias>
+            <ordinal>10</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>DeviceProtection</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[DeviceProtection]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>DeviceProtection</remote-alias>
+            <ordinal>11</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>TechSupport</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[TechSupport]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>TechSupport</remote-alias>
+            <ordinal>12</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>StreamingTV</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[StreamingTV]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>StreamingTV</remote-alias>
+            <ordinal>13</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>StreamingMovies</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[StreamingMovies]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>StreamingMovies</remote-alias>
+            <ordinal>14</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>Contract</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[Contract]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>Contract</remote-alias>
+            <ordinal>15</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>PaperlessBilling</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[PaperlessBilling]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>PaperlessBilling</remote-alias>
+            <ordinal>16</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>PaymentMethod</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[PaymentMethod]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>PaymentMethod</remote-alias>
+            <ordinal>17</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>MonthlyCharges</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[MonthlyCharges]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>MonthlyCharges</remote-alias>
+            <ordinal>18</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>15</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;R8&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>TotalCharges</remote-name>
+            <remote-type>5</remote-type>
+            <local-name>[TotalCharges]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>TotalCharges</remote-alias>
+            <ordinal>19</ordinal>
+            <local-type>real</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>15</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;R8&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>Churn</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[Churn]</local-name>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias>Churn</remote-alias>
+            <ordinal>20</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <collation flag='1' name='LEN_RIN_S2' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;WSTR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='capability'>
+            <remote-name />
+            <remote-type>0</remote-type>
+            <parent-name>[WA_Fn-UseC_-Telco-Customer-Chur]</parent-name>
+            <remote-alias />
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='integer' name='context'>0</attribute>
+              <attribute datatype='string' name='gridOrigin'>&quot;A1:U7044:no:A1:U7044:0&quot;</attribute>
+              <attribute datatype='boolean' name='header'>true</attribute>
+              <attribute datatype='integer' name='outcome'>6</attribute>
+            </attributes>
+          </metadata-record>
+        </metadata-records>
+      </connection>
+      <aliases enabled='yes' />
+      <column caption='Device Protection' datatype='string' name='[DeviceProtection]' role='dimension' type='nominal' />
+      <column caption='Internet Service' datatype='string' name='[InternetService]' role='dimension' type='nominal' />
+      <column caption='Monthly Charges' datatype='real' name='[MonthlyCharges]' role='measure' type='quantitative' />
+      <column caption='Multiple Lines' datatype='string' name='[MultipleLines]' role='dimension' type='nominal' />
+      <column datatype='integer' name='[Number of Records]' role='measure' type='quantitative' user:auto-column='numrec'>
+        <calculation class='tableau' formula='1' />
+      </column>
+      <column caption='Online Backup' datatype='string' name='[OnlineBackup]' role='dimension' type='nominal' />
+      <column caption='Online Security' datatype='string' name='[OnlineSecurity]' role='dimension' type='nominal' />
+      <column caption='Paperless Billing' datatype='string' name='[PaperlessBilling]' role='dimension' type='nominal' />
+      <column caption='Payment Method' datatype='string' name='[PaymentMethod]' role='dimension' type='nominal' />
+      <column caption='Phone Service' datatype='string' name='[PhoneService]' role='dimension' type='nominal' />
+      <column caption='Senior Citizen' datatype='integer' name='[SeniorCitizen]' role='measure' type='quantitative' />
+      <column caption='Streaming Movies' datatype='string' name='[StreamingMovies]' role='dimension' type='nominal' />
+      <column caption='Streaming TV' datatype='string' name='[StreamingTV]' role='dimension' type='nominal' />
+      <column caption='Tech Support' datatype='string' name='[TechSupport]' role='dimension' type='nominal' />
+      <column caption='Total Charges' datatype='real' name='[TotalCharges]' role='measure' type='quantitative' />
+      <column caption='Customer ID' datatype='string' name='[customerID]' role='dimension' type='nominal' />
+      <column caption='Gender' datatype='string' name='[gender]' role='dimension' type='nominal' />
+      <column caption='Tenure' datatype='integer' name='[tenure]' role='measure' type='quantitative' />
+      <layout dim-ordering='alphabetic' dim-percentage='0.738589' measure-ordering='alphabetic' measure-percentage='0.261411' show-structure='true' />
+      <semantic-values>
+        <semantic-value key='[Country].[Name]' value='&quot;India&quot;' />
+      </semantic-values>
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='Sheet 1'>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='WA_Fn-UseC_-Telco-Customer-Chur (Telco Churn)' name='federated.0aaseyi1md44ho0zo20qw0l0r7bd' />
+          </datasources>
+          <datasource-dependencies datasource='federated.0aaseyi1md44ho0zo20qw0l0r7bd'>
+            <column datatype='string' name='[Churn]' role='dimension' type='nominal' />
+            <column datatype='string' name='[Dependents]' role='dimension' type='nominal' />
+            <column datatype='integer' name='[Number of Records]' role='measure' type='quantitative' user:auto-column='numrec'>
+              <calculation class='tableau' formula='1' />
+            </column>
+            <column-instance column='[Churn]' derivation='None' name='[none:Churn:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Dependents]' derivation='None' name='[none:Dependents:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Number of Records]' derivation='Sum' name='[sum:Number of Records:qk]' pivot='key' type='quantitative' />
+          </datasource-dependencies>
+          <aggregation value='true' />
+        </view>
+        <style />
+        <panes>
+          <pane id='1' selection-relaxation-option='selection-relaxation-allow'>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Bar' />
+            <encodings>
+              <color column='[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Dependents:nk]' />
+            </encodings>
+            <style>
+              <style-rule element='mark'>
+                <format attr='mark-labels-show' value='true' />
+                <format attr='mark-labels-cull' value='true' />
+              </style-rule>
+            </style>
+          </pane>
+        </panes>
+        <rows>[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[sum:Number of Records:qk]</rows>
+        <cols>[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Churn:nk]</cols>
+      </table>
+    </worksheet>
+  </worksheets>
+  <windows source-height='30'>
+    <window class='worksheet' maximized='true' name='Sheet 1'>
+      <cards>
+        <edge name='left'>
+          <strip size='160'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='2147483647'>
+            <card type='columns' />
+          </strip>
+          <strip size='2147483647'>
+            <card type='rows' />
+          </strip>
+          <strip size='31'>
+            <card type='title' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='160'>
+            <card pane-specification-id='1' param='[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Dependents:nk]' type='color' />
+          </strip>
+        </edge>
+      </cards>
+      <viewpoint>
+        <highlight>
+          <color-one-way>
+            <field>[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Calculation_778278316530151424:qk]</field>
+            <field>[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Churn:nk]</field>
+            <field>[federated.0aaseyi1md44ho0zo20qw0l0r7bd].[none:Dependents:nk]</field>
+          </color-one-way>
+        </highlight>
+      </viewpoint>
+    </window>
+  </windows>
+  <thumbnails>
+    <thumbnail height='192' name='Sheet 1' width='190'>
+      iVBORw0KGgoAAAANSUhEUgAAAL4AAADACAYAAAC6XNksAAAACXBIWXMAAA7DAAAOwwHHb6hk
+      AAALQUlEQVR4nO3deXCU9R3H8TcsuTYEEo4Qbi0gGMBmSiQGCFBUhmiFSpVjohzxiFIcnQLK
+      YKsISq3FWoUWUQcNimJVRrBIEaXckdPlEOhwY5ArF4QsSWBJ/0hEjoSIk82S5/t5/bWz+3ue
+      5/fMvLP57UPYp1ZJSUkJIsbUDvQERAJB4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJ
+      Cl9MUvhiksIXkxS+k/kOs3RKKn2T4omPT6Jv6jQ2FgAH0kmJn8iKQM8vgOoEegLiLydZMXkE
+      T+/rz4z5bxLX4CzH1i9ld16g53VtUPhO5ZnFC4s78czi3xNXD8BF9M3JRAMcCOzUrgVa6jjU
+      gc3ryY7rRtd6FY04RMbMcdzTJ5H4+CQemLMXHwArmBg/sWxM6eMV5x+nkL53L588cSeJKekc
+      4ADpKfE8/mo64+7pQ2J8PElDy5ZT1ziF71CFp09Dk8Y0vMKYBj3GMHtJBqvfuptj0+ewttK9
+      nmTpCy+yd+DbLJsznNZlz3rd8YyZvYSM1W9x96l0PttYJafgVwrfoULDwuDocbIrHNGc9h1j
+      cLsgJKoh9c74OFvpXr20SJnKuJ7RhFy4p/YdiSndEQ0r/A1zbVH4DtW6Uxz1PWtYd7Iq9xrD
+      DW1qSNmVUPhO1SWNsd3W8Pen0/Hk+IAijq1fxJpDP2XjTCg6xrcLlrLFz9MMFIXvWPVIfmke
+      TzVdzpMDEoiPv437ZuwmJLKy7eLoMzCbpLvGMz+sDTdUx1QDoJa+XkQs0ju+mKTwxSSFLyYp
+      fDFJ4f9EXq830FOQKqTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJ
+      Cl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ349fRQZMmBvoKVy1+VOGBHoKAaN3fDFJ4YtJCl9M
+      UvhiksIXkxS+mKTwxSSFLyY59B+wjrBo0rN8euH9nhIeZWZqHOBh1ixITY0re6GQre/8hc1d
+      J3BfbFAA5iqB4NDwj3M05Hc8P7MvjSsZWeB5n3khg/mjojfFmUudE9lkN46uNHoKPHy4OJJh
+      gzrgqo55yTXDmeHn5BDSNKaSQQVsnLOQyEEDuF7Vm+PMpc6pk2z/9FnSPgVcYTRp25shab8l
+      Nrzs9bUzSFsLoQmjmFpO9RXdBCI/P99/cw4Ap53P1XBm+J1H8M+ZI0ofnykg85sPeePNlYx5
+      Ion6UPZBtx0Z0yfz8c5ODO1wcfxut/uyXXq9XiIiIvw+9erktPO5Gs5c6lwoKJwWXe8gsWAP
+      By96IZzEkUM4/WE6noIAzU0CxpHhb/34NRbtyKbQB/gKObxqHsujbqTdpQPD4xj+UDQL385A
+      7dviyKVObN9+ZL77KuOnHeW0L5hGN93BgyMSCC1nrKtZMiPbTGX6otaMTW6mqztG1CopKSkJ
+      9CRqAq/XW+7a/wf6H1g1iyOXOiKVUfhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIX
+      kxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIX
+      kxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIX
+      kxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIX
+      kxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mOTw8AvZ+s5Y0tJm4Tn/nIdZszyXjHmO
+      97afqf7pScA4Onzfvs9ZUNybW5tXPKbA8z7zQgYzNDao+iYmAefc8H3fs2heFv1S4omoaEyB
+      hw8XRzJsUAdc1Tk3CTjHhp+z8l8c7JZCl/CKRhSwcc5CIgcN4HpVb06dQE/ALwoymLs9geGj
+      woH8y19fO4O0tRCaMIqp5VTv9XrL3W1+fjn7qsGcdj5Xw4HhF+L56Btih4yiwjf7hEeZmdqO
+      jOmT+XhnJ4Z2uDh+t9t92SZer5eIiAoXTTWS087najgv/OMrWJixmYMZaXxw4fNpa0l4dCap
+      cT88EU7iyCHsmJqOZ2wqcRX+lIgTOS/8xn15embfC544wqJJn9P0mVTiLh0bHsfwhzJ58e0M
+      2o1OrPg3hDiOYz/c/lSuZsmMbLOC6Yu+xxfoyUi1qVVSUlIS6EnUBF6vt9y1/w8GTJhbjbOp
+      GvOnDAn0FALG/Du+2KTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJ
+      Cl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJCl9MUvhiksIXkxS+mKTwxSSFLyYpfDFJ4YtJ
+      zvt+/GtOON0H3MKwuIbEhNTGV3SKzV+u4vnVeZd/LXloI/oP7MKg9lFEBEGxN5evPlrG6/8r
+      AqBe+3gm3ns9bdy18B45yIz31rEi51zptq663D64Dw93cuMqyuOLuf89v51cTuH7W3A49XO2
+      M+mvxzjk9RHsbsygB7pz/4GFvJN5ydi6dQnZsY7HPjlBbhG4G7RidFoCt76ygq/C2vPUbT7e
+      mz6PTXkluFt14NmUmzg8zcMuoFXvHtx5Yi0P/+koBQ3aMv7Bsu0KA3HS1z4tdfyt+BifrzzM
+      IW/p+3ux9zird56hblg5Y7P289E3ueQWnQPO4c05yNffBRMeDLRoxOk1W9iU5yt97eB2/rE9
+      kp6tABpxe+dc3v3PUXJ9UHx8N6+vCiWps+7dWxGFX41cIXWJTUhkVKt9LNh15bHB7ii6Jffi
+      rvxtfHkSyC2geY+OdAipXbavUIJKgmjZJAgIo+GJLHZcsHY6tvsIZyN1c6OKaKlTLVry5JTu
+      dOcs+9et56XZBzhU0dAmnZj+eCdaUsjmRauYtCYLL0DmFl7alMT48fcQE1KbYm8uGzJdNPrO
+      DcF1CC0s5qKblJ47R0yjCCDPz+dWMyn8avEdL02YC0EhNG/ekiEPJvL17AxWF5Qz9Og2Rk/Y
+      hisklOvadWDciBjefmcb+3zn2Ld6OWmrfxza7Nf9uC/rBBTXozA0GDf8GH/t2hzJsnsf28po
+      qVOdzhRxaP9uXl5Vm3u7Xvkes76iQvZs8/DW/hYMbF/eiHASbjzHrkyA02TXb8SNF9yuN7pt
+      DHXyyvvJElD4/veLdozoFEXU+bV5JMm/akTOicsvtzSLiyX5uggiyj6TBkc25fZYF9knAcK4
+      vlVd3C7AFcYv70xiQPZ2FucCZLFkaxT392tClAuCG7flkR6FrNx6pppOsubRUsffck5RdEtX
+      pt1bem3eV3SKzasyeGVTaZTRSX15uYGH++cfI+9IEa3792JYy9LAi725rP5sOdPKLnu27tab
+      KR3r4uYMR/Zs47l3M88vbQ4uW8XCwX14Y7IbV1EWC2av1KXMK/Db7T6L8rMocEXRwO3i5K4l
+      LN/ppkOv7rSr54+j+Z9/bvcZzt2P3Mypd5exJACrEt3us8od4uPRI/lgvwuOfsJTqW/w2WdT
+      SH3+C7TqvECT1jTfuj4g0Vvnp/D3sOvbLnSOhUNfLsBz62PMmDGGnkvXsNE/B6yZjm5nermX
+      dsTf/BR+HVxBueSdLGDLpm+J69wRF0CQSx8q5Jrgp/ATuGPgTv58Zz8mrelF/9sb4tu4jq/j
+      Yin3ypxINfPTG7CLLuMW8MXIfM64o2jghpy6ibzwZDwN/XNAkatSheEXkZ+Vz2V/COvNJcsL
+      RHekLecoAkKq7qAiP0sVhr+Wl/v9gX9fccxv+NuGifSsuoOK/CxVGH5PJm7YwEQADpCe8hrR
+      b7xMctkfCPrWvUjq+v50r7oDivxs/wdToQM1PQKGDwAAAABJRU5ErkJggg==
+    </thumbnail>
+  </thumbnails>
+</workbook>
