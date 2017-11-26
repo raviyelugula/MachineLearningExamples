@@ -1,0 +1,9 @@
+{
+    "path" : "~/GitHub/MachineLearningExamples/Classification/Telecom_churn",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

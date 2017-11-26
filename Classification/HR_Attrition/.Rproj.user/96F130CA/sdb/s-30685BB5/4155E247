@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1511462373192.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4155E247",
+    "lastKnownWriteTime" : 1411188608353697792,
+    "last_content_update" : 1511462373192,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "BA4C4CCE",
+        "caption" : "Holdout_RF_Ranking",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=Holdout_RF_Ranking&cache_key=BA4C4CCE",
+        "displayedObservations" : 10,
+        "environment" : "",
+        "object" : "Holdout_RF_Ranking",
+        "preview" : 0,
+        "totalObservations" : 10,
+        "variables" : 10
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
