@@ -3,12 +3,16 @@ require(ggplot2)
 require(readxl)
 require(dummies)
 require(randomForest)
+
 require(caTools)
 require(caret)
 require(usdm)
 require(caret)
 require(rpart)
 require(e1071)
+
+require(caret)
+
 excel_sheets('Telco Churn.xlsx')
 rawdata = read_excel('Telco Churn.xlsx','WA_Fn-UseC_-Telco-Customer-Chur')
 sapply(rawdata,class)
@@ -42,6 +46,7 @@ Missing_data_Check <- function(data_set){
 Missing_data_Check(data_factors)
 data_factors[which(is.na(data_factors$TotalCharges)),'TotalCharges'] = mean(data_factors$TotalCharges,na.rm = T)
 data_factors = data_factors[-1]
+
 sapply(data_factors,class)
 # data_factors$Churn = as.factor(ifelse(data_factors$Churn=='Yes',1,0))
 
@@ -195,6 +200,18 @@ y_pred = predict(SVM_model, newdata = data_factors_te[,c('tenure','Contract','In
 CM = table(data_factors_te$Churn,y_pred)
 SVM_Specificity_imp = CM[4]/(CM[4]+CM[2])
 SVM_Acc_imp = (CM[1]+CM[4])/(CM[1]+CM[4]+CM[2]+CM[3])
+
+mtry_opt_value = train(form = Churn~ ., 
+                       data = data_factors, method = 'rf')
+RF_model = randomForest(Churn ~ ., 
+                        data = data_factors, 
+                        ntree=200, mtry = 5, nodesize = 20,
+                        importance=TRUE)
+
+featureImp_df = RF_model$importance
+colnames(featureImp_df)
+featureImp_df[order(featureImp_df[,4]),]
+
 
 
 
