@@ -3,14 +3,12 @@ require(ggplot2)
 require(readxl)
 require(dummies)
 require(randomForest)
-
 require(caTools)
 require(caret)
 require(usdm)
 require(caret)
 require(rpart)
 require(e1071)
-
 require(caret)
 
 excel_sheets('Telco Churn.xlsx')
@@ -24,16 +22,6 @@ factor_col_names = c("gender","SeniorCitizen","Partner","Dependents"
                      ,"Contract","PaperlessBilling","PaymentMethod","Churn")
 data_factors[factor_col_names] = lapply(data_factors[factor_col_names],factor)
 str(data_factors)
-
-# for( i in factor_col_names[1:16]){
-#   print(ggplot(data_factors,
-#                 aes(x=i,
-#                     fill =Churn))+
-#           xlab(names(data_factors[i]))+
-#           ylab('Frequency')+
-#           geom_bar(position = 'dodge')+
-#           guides(fill = guide_legend('Churn')))
-# }
 
 Missing_data_Check <- function(data_set){
   NA_Count = sapply(data_set,function(y) sum(length(which(is.na(y))))) 
@@ -76,27 +64,29 @@ cart_model$variable.importance
 featureImp_df[order(featureImp_df[,4]),]
 sort(cart_model$variable.importance)
 
-names(data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
-                         'MonthlyCharges','TechSupport','OnlineSecurity','Churn')])
-data_factors_tr_imp = data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
-                                         'MonthlyCharges','TechSupport','OnlineSecurity','Churn')]
-temp = data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
-                          'MonthlyCharges','TechSupport','OnlineSecurity')]
-dummy_df = dummy.data.frame(as.data.frame(temp))
-dummy_df = cbind(dummy_df,Churn=data_factors_tr$Churn)
-vif(dummy_df[,c(3:4)])
-vif(dummy_df[,c(6,7)])
-vif(dummy_df[,c(10:11)])
-vif(dummy_df[,c(13:14)])
-vif(dummy_df[,c(1:4,6,7,9:11,13,14)])
-vif(dummy_df[,c(1,2,9)])
 
-dummy_df = dummy_df[-2]
+# names(data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
+#                          'MonthlyCharges','TechSupport','OnlineSecurity','Churn')])
+# data_factors_tr_imp = data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
+#                                          'MonthlyCharges','TechSupport','OnlineSecurity','Churn')]
+# temp = data_factors_tr[,c('tenure','TotalCharges','Contract','InternetService',
+#                           'MonthlyCharges','TechSupport','OnlineSecurity')]
+# dummy_df = dummy.data.frame(as.data.frame(temp))
+# dummy_df = cbind(dummy_df,Churn=data_factors_tr$Churn)
+# vif(dummy_df[,c(3:4)])
+# vif(dummy_df[,c(6,7)])
+# vif(dummy_df[,c(10:11)])
+# vif(dummy_df[,c(13:14)])
+# vif(dummy_df[,c(1:4,6,7,9:11,13,14)])
+# vif(dummy_df[,c(1,2,9)])
+# 
+# dummy_df = dummy_df[-2]
 
 # log_model_imp= glm(formula = Churn~.,  
 #                    family = binomial,
 #                    data = dummy_df)
 # summary(log_model_imp)
+
 log_model_imp= glm(formula = Churn~tenure+Contract+InternetService
                     +MonthlyCharges+TechSupport+OnlineSecurity,
                    family = binomial,
@@ -106,27 +96,15 @@ summary(log_model_imp)
 prob_pred = predict(log_model_imp, type = 'response',
                     newdata = data_factors_te[,c('tenure','Contract','InternetService',
                                                   'MonthlyCharges','TechSupport','OnlineSecurity')])
-y_pred = ifelse(prob_pred > 0.50, 1, 0)
+y_pred = ifelse(prob_pred > 0.4, 1, 0)
 CM = table(data_factors_te$Churn,y_pred)
 log_model_imp_spec = CM[4]/(CM[4]+CM[2])
 round(log_model_imp_spec*100,2)
+log_model_imp_acc =( CM[1]+CM[4])/(CM[1]+CM[4]+CM[2]+CM[3])
+round(log_model_imp_acc*100,2)
 
-set.seed(1234)
-caret_tune = train(form = Churn~ ., data = data_factors_tr_imp, method = 'knn')
-caret_tune
-caret_tune$bestTune # caret to tune for k value
-
-y_pred = knn(train =data_factors_tr_imp[,-7],
-             test =data_factors_te[,-20],
-             cl = data_factors_tr_imp$Churn,
-             k = 9,
-             prob = TRUE)
-CM = table(T2_traindata_Test_BS_Scaled[,1],y_pred)
-Knn_Speci_Test = CM[4]/(CM[4]+CM[2])
-Knn_Speci_Test
 
 ##################### Naive Bayes all features
-
 NB_model = naiveBayes(x = data_factors_tr[-20],
                    y = data_factors_tr$Churn)
 
@@ -136,7 +114,6 @@ NB_Specificity = CM[4]/(CM[4]+CM[2])
 NB_Acc = (CM[1]+CM[4])/(CM[1]+CM[4]+CM[2]+CM[3])
 
 #################### Naive Bayes imp features
-
 NB_model = naiveBayes(x = data_factors_tr[,c('tenure','Contract','InternetService',
                                              'MonthlyCharges','TechSupport','OnlineSecurity')],
                       y = data_factors_tr$Churn)
@@ -200,20 +177,6 @@ y_pred = predict(SVM_model, newdata = data_factors_te[,c('tenure','Contract','In
 CM = table(data_factors_te$Churn,y_pred)
 SVM_Specificity_imp = CM[4]/(CM[4]+CM[2])
 SVM_Acc_imp = (CM[1]+CM[4])/(CM[1]+CM[4]+CM[2]+CM[3])
-
-mtry_opt_value = train(form = Churn~ ., 
-                       data = data_factors, method = 'rf')
-RF_model = randomForest(Churn ~ ., 
-                        data = data_factors, 
-                        ntree=200, mtry = 5, nodesize = 20,
-                        importance=TRUE)
-
-featureImp_df = RF_model$importance
-colnames(featureImp_df)
-featureImp_df[order(featureImp_df[,4]),]
-
-
-
 
 
 
