@@ -1,4 +1,4 @@
-# MachineLearningExamples
-This contains Great Lakes assignment problems and my practice work on ML
-* <b>Av-LoanPredictionProblem</b> - This is a classification problem on loan defaulters. Used various ML techniques to explore how they are behaving. Logistic Regression and Random Forest have outperformed other algorithms. - Status: <b>Completed</b>
-* <b>HR_Attrition</b> - This is a classification problem on employee attrition, Random Forest and Neural Network has been used to classify and their ensemble output is considered. - Status: <b>Completed</b>
+* <b>Av-LoanPredictionProblem</b> - This is a classification problem on loan defaulters. The data is of [980*13] used various ML techniques to explore how they are behaving. Logistic Regression and Random Forest have outperformed other algorithms. - Status: <b>Completed</b>
+* <b>HR_Attrition</b> - This is a classification problem on employee attrition, The data is of [2,941*35] Random Forest and Neural Network has been used to classify and their ensemble output is considered. - Status: <b>Completed</b>
+* <b>Due_defaulters</b> - This is a classification problem on Loan EMI defaulters,The data is of [6,000*5] LR, RF, CART, SVM, NN has been used to classify. As the data is highly skewed we have treated the data with boarder line SMOTE technique here. - Status: <b>Completed</b>
+* <b>Telecom_churn</b> - This is a classification problem on telecom customer churn, The data is of [7,000*21] RF technique has been used to identify the key features and they have been passed into LR to identify the significance and bring out insights on campaign promotion methodlogy. - Status: <b>Completed</b>
