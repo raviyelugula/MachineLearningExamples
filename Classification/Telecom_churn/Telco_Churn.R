@@ -10,7 +10,6 @@ require(caret)
 require(rpart)
 require(e1071)
 require(caret)
-
 excel_sheets('Telco Churn.xlsx')
 rawdata = read_excel('Telco Churn.xlsx','WA_Fn-UseC_-Telco-Customer-Chur')
 sapply(rawdata,class)
