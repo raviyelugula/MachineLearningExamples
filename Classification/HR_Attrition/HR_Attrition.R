@@ -1,5 +1,4 @@
 ## Data Load ----
-
 data_set = read.csv('HR_Employee_Attrition_Data.csv', header = T)
 table(sapply(data_set,class))
 factor_feildIDs=which(sapply(data_set, class) == "factor")
