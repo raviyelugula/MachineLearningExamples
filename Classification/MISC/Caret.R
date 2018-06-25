@@ -211,6 +211,61 @@ stack <- caretStack(model_list, method='glm')
 # Look at summary
 summary(stack)
 
+#### Code snippet for string search
+
+setwd( "G:/GL/Machine learning")
+#We will merge 2 Excel Files
+# Election 2012 and 2017
+#However, the Constituency names may have changed
+
+
+UP.2017.unmatched<-read.csv(file.choose(), header=T)
+UP.2012.all<-read.csv(file.choose(), header=T)
+
+UP.2017.unmatched$AC<-UP.2017.unmatched$EC.2017
+UP.2012.all$AC<-UP.2012.all$AC_NAME
+#install.packages('stringdist')
+library(stringdist)
+#We will only use LV,DL,JACCARD and JARROW
+
+distance.methods<-c('lv','dl','jaccard','jw')
+dist.methods<-list()
+for(m in 1:length(distance.methods))
+{
+  dist.name.enh<-matrix(NA, ncol = length(UP.2017.unmatched$AC),nrow = length(UP.2012.all$AC))
+  for(i in 1:length(UP.2017.unmatched$AC)) {
+    for(j in 1:length(UP.2012.all$AC)) { 
+      dist.name.enh[j,i]<-stringdist(tolower(UP.2017.unmatched[i,]$AC),tolower(UP.2012.all[j,]$AC),
+                                     method = distance.methods[m])      
+      #adist.enhance(UP.Match[i,]$name,UP_Crime[j,]$name)
+    }  
+  }
+  dist.methods[[distance.methods[m]]]<-dist.name.enh
+}
+
+match.s1.s2.enh<-NULL
+for(m in 1:length(dist.methods))
+{
+  
+  dist.matrix.1<-as.matrix(dist.methods[[distance.methods[m]]])
+  min.name.enh<-apply(dist.matrix.1, 1, base::min)
+  for(i in 1:nrow(dist.matrix.1))
+  {
+    s2.i<-match(min.name.enh[i],dist.matrix.1[i,])
+    s1.i<-i
+    match.s1.s2.enh<-rbind(data.frame(s2.i=s2.i,s1.i=s1.i,s2name=UP.2017.unmatched[s2.i,]$AC, 
+                                      s1name=UP.2012.all[s1.i,]$AC, adist=min.name.enh[i],
+                                      method=distance.methods[m]),match.s1.s2.enh)
+  }
+}
+
+library(reshape2)
+matched.names.matrix.17with12<-dcast(match.s1.s2.enh,s2.i+s1.i+s2name+s1name~method, value.var = "adist")
+View(matched.names.matrix.17with12)
+#Looks like jw does well
+
+write.csv(matched.names.matrix.17with12,"matched.name.matrix.17with12.csv")
+
 
 
 
